@@ -203,7 +203,6 @@ public class GameController implements Controller {
       if (event.getKeyCode() == VK_LEFT) {
         if (model.getGameState()) {
           model.doCommand(new MovePlayerLeftCommand(ClientConfig.getInstance().getId()));
-          // System.out.println()
         }
       } else {
         if (nextChain != null) {
