@@ -108,6 +108,7 @@ public class GameLoop implements Service<Void> {
           command.setExecutor(this);
           command.execute();
         }
+        // System.out.println(player.getPing()); // testing print ping for each player
       } else {
         player.close();
         it.remove();

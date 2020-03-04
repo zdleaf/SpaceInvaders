@@ -61,6 +61,7 @@ class Game implements Service<Void> {
     List<Integer> idList = new ArrayList<>(team.size());
     for (Player player : team) {
       idList.add(player.getId());
+      System.out.println("ID: " + player.getId() + ", ping: " + player.getPing()); // print ping and ID for each player
     }
     director.makeWorld(idList);
     world = director.getWorld();

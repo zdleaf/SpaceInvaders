@@ -1,0 +1,9 @@
+java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar server 5412 verbose
+java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar client
+
+
+
+
+in main/src/java
+mkdir target
+javac -d target -classpath "C:\Users\Zach\Dropbox\QMUL\DistributedSystems\Project\SpaceInvaders\lib\gson-2.8.0.jar" -sourcepath . spaceinvaders/SpaceInvaders.java

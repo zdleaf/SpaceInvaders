@@ -6,6 +6,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import spaceinvaders.command.Command;
 import spaceinvaders.server.network.Connection;
+import java.util.concurrent.ThreadLocalRandom;
 
 /** A player which has established a connection and is ready to join a game. */
 public class Player {
@@ -15,6 +16,7 @@ public class Player {
   private final Future<Void> connectionFuture;
   private String name;
   private Integer teamSize;
+  private Integer ping;
 
   /**
    * Wrap a player around the specified connection.
@@ -31,6 +33,7 @@ public class Player {
     }
     this.connection = connection;
     connectionFuture = connectionExecutor.submit(connection);
+    ping = ThreadLocalRandom.current().nextInt(1, 101);
   }
 
   /**
@@ -95,6 +98,10 @@ public class Player {
 
   public void setTeamSize(int teamSize) {
     this.teamSize = teamSize;
+  }
+
+  public Integer getPing() {
+    return ping;
   }
 
   /**
