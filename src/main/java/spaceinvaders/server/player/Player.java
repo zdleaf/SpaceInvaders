@@ -71,7 +71,6 @@ public class Player {
   /** Close the connection. */
   public void close() {
     LOGGER.info("Connection " + getId() + " closed");
-
     connection.shutdown();
     connectionFuture.cancel(true);
   }
