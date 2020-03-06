@@ -2,6 +2,7 @@ package spaceinvaders.server.network.udp;
 
 import static java.util.logging.Level.SEVERE;
 
+import java.lang.Thread;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -50,6 +51,13 @@ class UdpReceiver implements Service<Void> {
       DatagramPacket packet = new DatagramPacket(buffer,buffer.length);
       try {
         serverSocket.receive(packet);
+/*         try{
+          // artificial network delay
+          Thread.sleep(100); // set a delay on receiving packets
+          System.out.println("Thread.sleep() on UdpReceiver");
+        } catch (InterruptedException ex){
+          System.out.println("Thread.sleep() error in UdpReciever.java.Call():" + ex);
+        } */
         if (!incomingPacketQueue.offer(packet)) {
           // This should never happen.
           throw new AssertionError();

@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import spaceinvaders.utility.Service;
 import spaceinvaders.utility.ServiceState;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /** Takes UDP packets out of a transfer queue and sends them to their destination. */
 class UdpSender implements Service<Void> {
   private static final Logger LOGGER = Logger.getLogger(UdpSender.class.getName());
@@ -55,7 +57,17 @@ class UdpSender implements Service<Void> {
         break;
       }
       try {
-        serverSocket.send(packet);
+        Integer rand = ThreadLocalRandom.current().nextInt(1, 10);
+        if(rand > 9){
+          serverSocket.send(packet);
+        } else { System.out.println("Skipped packet"); }
+/*         try{
+          // artificial network delay
+          Thread.sleep(50); // set a delay on receiving packets
+          System.out.println("Thread.sleep() on UdpSender");
+        } catch (InterruptedException ex){
+          System.out.println("Thread.sleep() error in UdpReciever.java.Call():" + ex);
+        } */
       } catch (IOException ioException) {
         if (state.get()) {
           throw ioException;
