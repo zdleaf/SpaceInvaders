@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -149,6 +150,8 @@ public class Connection implements Service<Void> {
     final List<Command> commands = new ArrayList<>();
     try {
       incomingCommandQueue.drainTo(commands);
+      // print the incomingCommandQueue
+      commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName()));
     } catch (Exception exception) {
       // Do not close the connection.
       LOGGER.log(SEVERE,exception.toString(),exception);

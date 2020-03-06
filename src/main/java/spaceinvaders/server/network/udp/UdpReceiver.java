@@ -12,6 +12,7 @@ import spaceinvaders.exceptions.SocketOpeningException;
 import spaceinvaders.utility.Service;
 import spaceinvaders.utility.ServiceState;
 
+
 /** Receives UDP packets. */
 class UdpReceiver implements Service<Void> {
   private static final Logger LOGGER = Logger.getLogger(UdpReceiver.class.getName());
