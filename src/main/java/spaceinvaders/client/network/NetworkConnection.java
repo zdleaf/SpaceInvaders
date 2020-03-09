@@ -41,6 +41,7 @@ public class NetworkConnection implements Service<Void> {
   private final ExecutorService tcpReceiverExecutor;
   private final ExecutorService udpReceiverExecutor;
   private final ServiceState state = new ServiceState();
+  private final Integer ping;
 
   /**
    * Configure a new network connection.
@@ -54,6 +55,7 @@ public class NetworkConnection implements Service<Void> {
    */
   public NetworkConnection(TransferQueue<String> incomingQueue) throws SocketOpeningException {
     ClientConfig config = ClientConfig.getInstance();
+    ping = config.getPing();
     if (incomingQueue == null) {
       throw new NullPointerException();
     }
@@ -83,7 +85,7 @@ public class NetworkConnection implements Service<Void> {
     try {
       tcpSender = new TcpSender(tcpSocket);
       tcpReceiver = new TcpReceiver(tcpSocket,incomingQueue);
-      udpSender = new UdpSender(outgoingUdpSocket);
+      udpSender = new UdpSender(outgoingUdpSocket, ping);
       udpReceiver = new UdpReceiver(incomingUdpSocket,incomingQueue);
     } catch (IOException exception) {
       throw new SocketOpeningException(exception);

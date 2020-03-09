@@ -112,6 +112,7 @@ public class GameController implements Controller {
       ClientConfig config = ClientConfig.getInstance();
       try {
         config.verify();
+        System.out.println("CLIENT ping: " + config.getPing()); // print ping and ID for each player
       } catch (InvalidServerAddressException | IllegalPortNumberException
           | InvalidUserNameException exception) {
         displayErrorOnViews(exception);

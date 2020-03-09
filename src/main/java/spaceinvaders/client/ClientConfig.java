@@ -10,6 +10,8 @@ import spaceinvaders.exceptions.IllegalPortNumberException;
 import spaceinvaders.exceptions.InvalidServerAddressException;
 import spaceinvaders.exceptions.InvalidUserNameException;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /** Used to hold the configuration of the client. */
 public class ClientConfig {
   private static final transient Logger LOGGER = Logger.getLogger(ClientConfig.class.getName());
@@ -23,6 +25,7 @@ public class ClientConfig {
   private Integer serverPort;
   private String userName;
   private Integer udpIncomingPort;
+  private Integer ping = ThreadLocalRandom.current().nextInt(1, 101);
 
   private ClientConfig() {}
 
@@ -54,6 +57,10 @@ public class ClientConfig {
 
   public int getMaxPlayers() {
     return maxPlayersPerTeam;
+  }
+
+  public Integer getPing() {
+    return ping;
   }
 
   /** Check if the server address is valid. */

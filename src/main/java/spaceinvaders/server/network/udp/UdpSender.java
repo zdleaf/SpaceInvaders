@@ -61,9 +61,9 @@ class UdpSender implements Service<Void> {
 
         // skip packets randomly
         Integer rand = ThreadLocalRandom.current().nextInt(1, 10);
-        if(rand < 8){
+        if(rand < 10){
           serverSocket.send(packet);
-        } else { LOGGER.info("Skipped Udp packet send"); }
+        } else { LOGGER.info("SERVER skipped packet send " + packet); }
 /*         try{
           // artificial network delay
           Thread.sleep(50); // set a delay on receiving packets

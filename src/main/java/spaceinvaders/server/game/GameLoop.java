@@ -28,6 +28,8 @@ import spaceinvaders.server.player.Player;
 import spaceinvaders.utility.AutoSwitch;
 import spaceinvaders.utility.Service;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /** Provides methods for handling player input and advancing the game simulation. */
 public class GameLoop implements Service<Void> {
   private static final int GUARD_PIXELS = 32;
@@ -105,7 +107,7 @@ public class GameLoop implements Service<Void> {
       if (player.isOnline()) {
         List<Command> commands = player.pull();
         // print the incomingCommandQueue
-        commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName()));
+        commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
         for (Command command : commands) {
           command.setExecutor(this);
           command.execute();

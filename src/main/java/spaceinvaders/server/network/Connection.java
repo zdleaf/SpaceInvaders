@@ -139,7 +139,7 @@ public class Connection implements Service<Void> {
       throw new NullPointerException();
     }
     sender.handle(command);
-    System.out.println("send() command: " + command.getName());
+    //LOGGER.info("outbound: " + command.getName());
   }
 
   /**
@@ -151,6 +151,7 @@ public class Connection implements Service<Void> {
     final List<Command> commands = new ArrayList<>();
     try {
       incomingCommandQueue.drainTo(commands);
+      //commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName())); //
     } catch (Exception exception) {
       // Do not close the connection.
       LOGGER.log(SEVERE,exception.toString(),exception);
