@@ -139,7 +139,7 @@ public class Connection implements Service<Void> {
       throw new NullPointerException();
     }
     sender.handle(command);
-    //LOGGER.info("outbound: " + command.getName());
+    LOGGER.info("SERVER: " + command.getName());
   }
 
   /**

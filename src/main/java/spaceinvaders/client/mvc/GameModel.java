@@ -104,6 +104,8 @@ public class GameModel implements Model {
       throw new NullPointerException();
     }
     connection.send(command);
+    LOGGER.info("CLIENT: " + command.getName());
+
   }
 
   @Override

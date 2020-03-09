@@ -107,7 +107,7 @@ public class GameLoop implements Service<Void> {
       if (player.isOnline()) {
         List<Command> commands = player.pull();
         // print the incomingCommandQueue
-        commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
+        // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
         for (Command command : commands) {
           command.setExecutor(this);
           command.execute();
