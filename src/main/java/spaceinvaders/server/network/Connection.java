@@ -139,7 +139,10 @@ public class Connection implements Service<Void> {
       throw new NullPointerException();
     }
     sender.handle(command);
-    LOGGER.info("SERVER: " + command.getName());
+    String cmd = command.getName();
+    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand"){
+      LOGGER.info("SERVER: " + cmd);
+    }
   }
 
   /**
