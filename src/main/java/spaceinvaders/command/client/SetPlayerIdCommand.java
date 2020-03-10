@@ -30,9 +30,10 @@ public class SetPlayerIdCommand extends Command {
   public void execute() {
     ClientConfig config = ClientConfig.getInstance();
     config.setId(id);
+    System.out.println("SetPlayerIdCommand: CLIENT ID: " + id); // print client ID
     Model model = executor.getModel();
     model.doCommand(new ConfigurePlayerCommand(config.getUserName(),config.getTeamSize(),
-          config.getUdpIncomingPort()));
+          config.getUdpIncomingPort(), config.getPing()));
     for (View view : executor.getViews()) {
       view.showGame();
     }

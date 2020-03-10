@@ -11,6 +11,7 @@ public class ConfigurePlayerCommand extends Command {
   private String playerName;
   private Integer teamSize;
   private Integer receivingUdpPort;
+  private Integer ping;
 
   ConfigurePlayerCommand() {
     super(ConfigurePlayerCommand.class.getName(),TCP);
@@ -23,7 +24,7 @@ public class ConfigurePlayerCommand extends Command {
    *
    * @throws NullPointerException if an argument is {@code null}.
    */
-  public ConfigurePlayerCommand(String playerName, int teamSize, int receivingUdpPort) {
+  public ConfigurePlayerCommand(String playerName, int teamSize, int receivingUdpPort, int ping) {
     this();
     if (playerName == null) {
       throw new NullPointerException();
@@ -31,6 +32,7 @@ public class ConfigurePlayerCommand extends Command {
     this.playerName = playerName;
     this.teamSize = teamSize;
     this.receivingUdpPort = receivingUdpPort;
+    this.ping = ping;
   }
 
   @Override
@@ -38,6 +40,7 @@ public class ConfigurePlayerCommand extends Command {
     executor.setName(playerName);
     executor.setTeamSize(teamSize);
     executor.setUdpDestinationPort(receivingUdpPort);
+    executor.setPing(ping);
   }
 
   @Override

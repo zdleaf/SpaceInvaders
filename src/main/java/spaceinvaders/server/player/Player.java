@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import spaceinvaders.command.Command;
 import spaceinvaders.server.network.Connection;
-import java.util.concurrent.ThreadLocalRandom;
 
 /** A player which has established a connection and is ready to join a game. */
 public class Player {
@@ -33,7 +32,6 @@ public class Player {
     }
     this.connection = connection;
     connectionFuture = connectionExecutor.submit(connection);
-    ping = ThreadLocalRandom.current().nextInt(1, 101);
   }
 
   /**
@@ -102,6 +100,11 @@ public class Player {
   public Integer getPing() {
     return ping;
   }
+
+  public void setPing(Integer ping) {
+    this.ping = ping;
+  }
+
 
   /**
    * Set the remote port to which UDP packets should be sent.
