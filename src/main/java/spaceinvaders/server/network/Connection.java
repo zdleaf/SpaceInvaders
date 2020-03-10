@@ -85,10 +85,7 @@ public class Connection implements Service<Void> {
       }
       try {
         director.makeCommand(data);
-        if (!incomingCommandQueue.offer(director.getCommand())) {
-          // This should never happen.
-          throw new AssertionError();
-        }
+        executeCommandArray();
       } catch (JsonSyntaxException | CommandNotFoundException exception) {
         LOGGER.log(SEVERE,exception.toString(),exception);
       }
@@ -106,6 +103,15 @@ public class Connection implements Service<Void> {
     }
   }
 
+  public void executeCommandArray(){
+    for(Command command: director.getCommandArray()){ // get the ArrayList containing list of commands, and add to the incomingCommandQueue
+      if (!incomingCommandQueue.offer(command)) {
+        throw new AssertionError();
+      }
+    }
+    director.clearCommandArray(); // clear the command array now we've executed all
+  }
+
   /**
    * Unwrap an UDP packet and put it in the {@code incomingCommandQueue}.
    * 
@@ -119,9 +125,7 @@ public class Connection implements Service<Void> {
 
     try {
       director.makeCommand(data.trim());
-      if (!incomingCommandQueue.offer(director.getCommand())) {
-        throw new AssertionError();
-      }
+      executeCommandArray();
     } catch (JsonSyntaxException | CommandNotFoundException exception) {
       LOGGER.log(SEVERE,exception.toString(),exception);
     }

@@ -65,4 +65,8 @@ public abstract class CommandBuilder {
     System.out.println(commandArray);
     return commandArray;
   }
+
+  public void clearCommandArray(){
+    commandArray.clear();
+  }
 }

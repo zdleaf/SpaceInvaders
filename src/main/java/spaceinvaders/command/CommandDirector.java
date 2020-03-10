@@ -3,6 +3,8 @@ package spaceinvaders.command;
 import com.google.gson.JsonSyntaxException;
 import spaceinvaders.exceptions.CommandNotFoundException;
 
+import java.util.ArrayList;
+
 /**
  * Used to convert JSON data into {@link spaceinvaders.command.Command}.
  *
@@ -44,5 +46,13 @@ public class CommandDirector {
    */
   public Command getCommand() {
     return builder.getCommand();
+  }
+
+  public ArrayList<Command> getCommandArray() {
+    return builder.getCommandArray();
+  }
+
+  public void clearCommandArray() {
+    builder.clearCommandArray();
   }
 }
