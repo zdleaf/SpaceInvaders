@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import spaceinvaders.command.Command;
 import spaceinvaders.exceptions.CommandNotFoundException;
+import java.util.ArrayList;
 
 /** Builds commands. */
 public abstract class CommandBuilder {
@@ -16,6 +17,7 @@ public abstract class CommandBuilder {
   private static final JsonParser PARSER = new JsonParser();
   private Map<String,Command> commandMap;
   private Command command;
+  private ArrayList<Command> commandArray = new ArrayList<Command>(); // Create an ArrayList object
 
   /** Create a builder capable of building the specified commands. */
   public CommandBuilder(Command ... commands) {
@@ -37,17 +39,30 @@ public abstract class CommandBuilder {
     if (json == null) {
       throw new NullPointerException();
     }
-    JsonObject jsonObj = PARSER.parse(json).getAsJsonObject();
-    String key = jsonObj.get("name").getAsString();
-    Command value = commandMap.get(key);
-    if (value == null) {
-      throw new CommandNotFoundException();
+    System.out.println("FULL JSON: " + json);
+    String[] jsonObjects = json.split("~", 0); // handle multiple JSON in one network packet - split by "~" token
+    for(String item: jsonObjects){ // parse each JSON object
+      System.out.println("JSON SPLIT: " + item);
+      JsonObject jsonObj = PARSER.parse(item).getAsJsonObject();
+      String key = jsonObj.get("name").getAsString();
+      Command value = commandMap.get(key);
+      if (value == null) {
+        throw new CommandNotFoundException();
+      }
+      command = GSON.fromJson(item,value.getClass());
+      commandArray.add(command);
+      System.out.println("Added command to commandArray");
     }
-    command = GSON.fromJson(json,value.getClass());
   }
 
   /** Get the last command built. */
   public Command getCommand() {
     return command;
+  }
+
+  // get the commandArray
+  public ArrayList<Command> getCommandArray() {
+    System.out.println(commandArray);
+    return commandArray;
   }
 }

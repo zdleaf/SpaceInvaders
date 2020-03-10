@@ -43,6 +43,8 @@ class UdpSender implements Chain<Command> {
     }
     if (command.getProtocol().equals(UDP)) {
       String data = command.toJson();
+      data += "~" + data;
+      LOGGER.info("JSON " + data);
       DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
       try {
         // socket.send(packet);
