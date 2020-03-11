@@ -103,8 +103,9 @@ public class Connection implements Service<Void> {
     }
   }
 
+  // get the ArrayList containing list of commands, and add to the incomingCommandQueue
   public void executeCommandArray(){
-    for(Command command: director.getCommandArray()){ // get the ArrayList containing list of commands, and add to the incomingCommandQueue
+    for(Command command: director.getCommandArray()){ 
       if (!incomingCommandQueue.offer(command)) {
         throw new AssertionError();
       }

@@ -1,5 +1,5 @@
 java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar server 5412 verbose
-java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar client
+java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar client verbose
 
 
 

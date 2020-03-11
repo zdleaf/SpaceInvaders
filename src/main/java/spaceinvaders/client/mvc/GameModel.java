@@ -98,8 +98,14 @@ public class GameModel implements Model {
    *
    * @throws NullPointerException if there is no connection.
    */
+  // add bucket here - we want to group commands into buckets, then send at once
   @Override
   public void doCommand(Command command) {
+    /* 
+    pseudo code/bucket synchro
+    - if command buffer is not full/time up, add to bucket but do not send
+    - if command buffer time is up, send the bucket to the server and clear bucket
+    */
     if (connection == null) {
       throw new NullPointerException();
     }
