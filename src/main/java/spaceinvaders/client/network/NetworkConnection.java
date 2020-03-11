@@ -160,4 +160,13 @@ public class NetworkConnection implements Service<Void> {
   public void send(Command command) {
     sender.handle(command);
   }
+
+  /**
+   * Send a command bucket to the server.
+   *
+   * @throws NullPointerException if an argument is {@code null}.
+   */
+  public void send(ArrayList<Command> commandBucket) {
+    sender.handleBucket(commandBucket);
+  }
 }

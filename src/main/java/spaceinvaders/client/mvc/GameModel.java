@@ -21,6 +21,9 @@ import spaceinvaders.exceptions.SocketOpeningException;
 import spaceinvaders.utility.Service;
 import spaceinvaders.utility.ServiceState;
 
+import java.lang.System; // for currentTimeMillis()
+import java.util.ArrayList; // for commandBucket;
+
 /**
  * Provides the game data.
  *
@@ -37,6 +40,9 @@ public class GameModel implements Model {
   private final ServiceState connectionState = new ServiceState();
   private final ServiceState gameState = new ServiceState();
   private NetworkConnection connection;
+
+  private static ArrayList<Command> commandBucket = new ArrayList<Command>();;
+  private static long timestamp;
 
   public GameModel() {
     dispatcherExecutor.submit(dispatcher);
@@ -101,14 +107,32 @@ public class GameModel implements Model {
   // add bucket here - we want to group commands into buckets, then send at once
   @Override
   public void doCommand(Command command) {
+
     /* 
     pseudo code/bucket synchro
+    - if bucket is empty, set timestamp
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
     */
     if (connection == null) {
       throw new NullPointerException();
     }
+    final long currentTime = System.currentTimeMillis();
+
+    if(commandBucket.isEmpty()){
+      timestamp = currentTime; // reset the timestamp
+      commandBucket.add(command);
+    } else {
+      long difference = currentTime - timestamp;
+      if(difference <= 3000){
+        LOGGER.info("TIMESTAMP DIFF <3000: " + difference);
+        commandBucket.add(command);
+      } else { 
+        LOGGER.info("TIMESTAMP DIFF>3000: " + difference);
+        commandBucket.clear();
+      }
+    }
+
     connection.send(command);
     LOGGER.info("CLIENT: " + command.getName());
 

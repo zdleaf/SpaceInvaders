@@ -11,6 +11,7 @@ import spaceinvaders.command.Command;
 import spaceinvaders.utility.Chain;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList; // for commandBucket;
 
 /** Send commands using the UDP protocol. */
 class UdpSender implements Chain<Command> {
@@ -69,6 +70,11 @@ class UdpSender implements Chain<Command> {
       }
       nextChain.handle(command);
     }
+  }
+  
+  @Override
+  public void handleBucket(ArrayList<Command> commandBucket){
+    // blank
   }
 
   @Override
