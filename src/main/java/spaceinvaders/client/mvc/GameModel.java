@@ -42,7 +42,7 @@ public class GameModel implements Model {
   private NetworkConnection connection;
 
   private static ArrayList<Command> commandBucket = new ArrayList<Command>();;
-  private static long timestamp;
+  private static long lastTimestamp;
 
   public GameModel() {
     dispatcherExecutor.submit(dispatcher);
@@ -113,28 +113,51 @@ public class GameModel implements Model {
     - if bucket is empty, set timestamp
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
+
+    NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
+    See UDPHandler 
+    private static final int MAX_INCOMING_PACKET_SIZE = 256;
     */
     if (connection == null) {
       throw new NullPointerException();
     }
     final long currentTime = System.currentTimeMillis();
+    long timeDiff = currentTime - lastTimestamp;
+    if (command.getName() == "spaceinvaders.command.server.ConfigurePlayerCommand"){ // do not bucket the initial ConfigurePlayerCommand - we must respond within 1s or connection is closed
+      connection.send(command);
+      lastTimestamp = System.currentTimeMillis(); // initialise with current time
+    }
+    else if(commandBucket.isEmpty() && timeDiff > 3000){ // if it's just a single command
+      LOGGER.info("CLIENT SENDING INDIVIDUAL: " + timeDiff + " : " + command.getName());
+      connection.send(command);
+    } 
+    else if(!commandBucket.isEmpty() && timeDiff > 3000){ // if we have a bucket of commands send the bucket
+      LOGGER.info("CLIENT SENDING BUCKET: " + timeDiff);
+      connection.send(commandBucket);
+      commandBucket.clear();
+    } 
+    else {
+      commandBucket.add(command);
+    }
+    lastTimestamp = currentTime; // reset the timestamp
 
-    if(commandBucket.isEmpty()){
-      timestamp = currentTime; // reset the timestamp
+/*       lastTimestamp = currentTime; // reset the timestamp
       commandBucket.add(command);
     } else {
-      long difference = currentTime - timestamp;
+      long difference = currentTime - lastTimestamp;
       if(difference <= 3000){
         LOGGER.info("TIMESTAMP DIFF <3000: " + difference);
         commandBucket.add(command);
       } else { 
         LOGGER.info("TIMESTAMP DIFF>3000: " + difference);
+        LOGGER.info("CLIENT SENDING BUCKET: " + difference);
+        connection.send(commandBucket);
         commandBucket.clear();
       }
-    }
+    } */
 
-    connection.send(command);
-    LOGGER.info("CLIENT: " + command.getName());
+    //connection.send(command);
+    //LOGGER.info("CLIENT: " + command.getName());
 
   }
 

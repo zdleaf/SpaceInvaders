@@ -75,6 +75,25 @@ class UdpSender implements Chain<Command> {
   @Override
   public void handleBucket(ArrayList<Command> commandBucket){
     // blank
+    String data = "";
+    for(Command command: commandBucket){
+      if (command == null) {
+        throw new NullPointerException();
+      }
+      if (command.getProtocol().equals(UDP)) {
+        data += command.toJson() + "~"; // construct our JSON string delimited by "~"
+      }
+    }
+    System.out.print("handleBucket - MULTI: " + data + "\n");
+    DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+    try {
+      Thread.sleep(ping);
+      socket.send(packet);
+    } catch (Exception exception) {
+      // Do not stop the game in case one packet fails.
+      LOGGER.log(SEVERE,exception.toString(),exception);
+    }
+    // do we need if nextChain = handle if not UDP?
   }
 
   @Override

@@ -39,10 +39,10 @@ public abstract class CommandBuilder {
     if (json == null) {
       throw new NullPointerException();
     }
-    //System.out.println("FULL JSON: " + json);
+    System.out.println("FULL JSON: " + json);
     String[] jsonObjects = json.split("~", 0); // handle multiple JSON in one network packet - split by "~" token
     for(String item: jsonObjects){ // parse each JSON object
-      // System.out.println("JSON SPLIT: " + item);
+      System.out.println("JSON SPLIT: " + item);
       JsonObject jsonObj = PARSER.parse(item).getAsJsonObject();
       String key = jsonObj.get("name").getAsString();
       Command value = commandMap.get(key);
