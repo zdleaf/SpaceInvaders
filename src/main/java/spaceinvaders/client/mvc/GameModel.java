@@ -109,7 +109,7 @@ public class GameModel implements Model {
   public void doCommand(Command command) {
 
     /* 
-    pseudo code/bucket synchro
+    bucket synchro
     - if bucket is empty, set timestamp
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
