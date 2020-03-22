@@ -72,6 +72,13 @@ class UdpSender implements Chain<Command> {
     }
   }
   
+/*   NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
+  See UDPHandler 
+  private static final int MAX_INCOMING_PACKET_SIZE = 1024; 
+
+  check if data + new cmd > 1024, if so, split into multiple packets
+  
+*/
   @Override
   public void handleBucket(ArrayList<Command> commandBucket){
     // blank
