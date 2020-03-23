@@ -9,6 +9,7 @@ import java.net.DatagramSocket;
 import java.util.logging.Logger;
 import spaceinvaders.command.Command;
 import spaceinvaders.utility.Chain;
+import spaceinvaders.server.network.udp.UdpHandler;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.ArrayList; // for commandBucket;
@@ -47,22 +48,7 @@ class UdpSender implements Chain<Command> {
       data += "~" + data;
       LOGGER.info("JSON " + data);
       DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
-      try {
-        // socket.send(packet);
-        // skip packets randomly
-/*         Integer rand = ThreadLocalRandom.current().nextInt(1, 10);
-        if(rand < 8){
-          socket.send(packet);
-        } else { LOGGER.info("CLIENT skipped packet send " + packet); } */
-
-        // delay packets artifically with ping
-        Thread.sleep(ping);
-        socket.send(packet);
-
-      } catch (Exception exception) {
-        // Do not stop the game in case one packet fails.
-        LOGGER.log(SEVERE,exception.toString(),exception);
-      }
+      sendPacket(packet);
     } else {
       if (nextChain == null) {
         // This should never happen.
@@ -77,35 +63,47 @@ class UdpSender implements Chain<Command> {
   private static final int MAX_INCOMING_PACKET_SIZE = 1024; 
 
   check if data + new cmd > 1024, if so, split into multiple packets
+
 */
+  // if our bucket is longer than MAX_INCOMING_PACKET_SIZE, we need to split into separate buckets
   @Override
   public void handleBucket(ArrayList<Command> commandBucket){
-    // blank
+    // WRONG - at the moment it's waiting for the bucket to fill up-  we do not want to wait till we reach MAX packet size, we can send packets less than this
     String data = "";
-    String overflow = ""; // if our bucket is longer than MAX_INCOMING_PACKET_SIZE, we need to split into separate buckets
 
-/*     while(!commandBucket.isEmpty()){
-      
-    } */
-    for(Command command: commandBucket){
+    for(int idx = 0; idx < commandBucket.size(); idx++){
+      Command command = commandBucket.get(idx);
       if (command == null) {
         throw new NullPointerException();
       }
       if (command.getProtocol().equals(UDP)) {
-        data += command.toJson() + "~"; // construct our JSON string delimited by "~"
+        String combined = data + command.toJson() + "~";
+        if(combined.length() < UdpHandler.getPacketSize()){ // MAX_INCOMING_PACKET_SIZE from SERVER
+          data += command.toJson() + "~"; // construct our combined JSON string delimited by "~"
+          // break;
+        } else { // send the bucket and start preparing the next bucket
+          System.out.print("handleBucket - MULTI: " + data + "\n");
+          DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+          sendPacket(packet);
+          data = "";
+        }
       }
     }
-    System.out.print("handleBucket - MULTI: " + data + "\n");
-    DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+
+    // do we need if nextChain = handle if not UDP?
+  }
+
+  @Override
+  public void sendPacket(DatagramPacket packet){
     try {
-      Thread.sleep(ping);
+      Thread.sleep(ping); // delay artifically by ping (ms)
       socket.send(packet);
     } catch (Exception exception) {
       // Do not stop the game in case one packet fails.
       LOGGER.log(SEVERE,exception.toString(),exception);
     }
-    // do we need if nextChain = handle if not UDP?
   }
+
 
   @Override
   public void setNext(Chain<Command> nextChain) {

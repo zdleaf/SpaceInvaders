@@ -30,6 +30,10 @@ public class UdpHandler implements Service<Void> {
   private final ExecutorService senderExecutor;
   private final ServiceState state = new ServiceState();
 
+  public static final int getPacketSize(){
+    return MAX_INCOMING_PACKET_SIZE;
+  }
+
   /**
    * Constuct an UDP handler which will start a sender and a receiver.
    *

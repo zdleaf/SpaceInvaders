@@ -32,7 +32,7 @@ import java.util.ArrayList; // for commandBucket;
  */
 public class GameModel implements Model {
   private static final Logger LOGGER = Logger.getLogger(GameModel.class.getName());
-
+  private static final int BUCKET_DELAY = 3000;
   private final TransferQueue<String> incomingQueue = new LinkedTransferQueue<>();
   private final CommandDispatcher dispatcher = new CommandDispatcher();
   private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
@@ -127,11 +127,11 @@ public class GameModel implements Model {
       connection.send(command);
       lastTimestamp = System.currentTimeMillis(); // initialise with current time
     }
-    else if(commandBucket.isEmpty() && timeDiff > 3000){ // if it's just a single command
+    else if(commandBucket.isEmpty() && timeDiff > BUCKET_DELAY){ // if it's just a single command
       LOGGER.info("CLIENT SENDING INDIVIDUAL: " + timeDiff + " : " + command.getName());
       connection.send(command);
     } 
-    else if(!commandBucket.isEmpty() && timeDiff > 3000){ // if we have a bucket of commands send the bucket
+    else if(!commandBucket.isEmpty() && timeDiff > BUCKET_DELAY){ // if we have a bucket of commands send the bucket
       LOGGER.info("CLIENT SENDING BUCKET: " + timeDiff);
       connection.send(commandBucket);
       commandBucket.clear();

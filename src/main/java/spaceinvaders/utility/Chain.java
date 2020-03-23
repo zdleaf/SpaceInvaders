@@ -1,5 +1,6 @@
 package spaceinvaders.utility;
 import java.util.ArrayList;
+import java.net.DatagramPacket;
 
 /**
  * Chain of Responsibility.
@@ -10,7 +11,7 @@ public interface Chain<T> {
   /** Either handles the task or passes it to the next in chain. */
   public void handle(T task);
   public void handleBucket(ArrayList<T> bucket);
-
+  public void sendPacket(DatagramPacket packet);
   /**
    * @param next next in chain.
    */

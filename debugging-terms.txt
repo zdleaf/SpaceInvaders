@@ -1,0 +1,5 @@
+SERVER Connection.Java
+CLIENT
+FULL JSON
+JSON SPLIT
+getCommandArray()
