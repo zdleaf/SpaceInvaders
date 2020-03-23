@@ -77,12 +77,16 @@ class UdpSender implements Chain<Command> {
   private static final int MAX_INCOMING_PACKET_SIZE = 1024; 
 
   check if data + new cmd > 1024, if so, split into multiple packets
-  
 */
   @Override
   public void handleBucket(ArrayList<Command> commandBucket){
     // blank
     String data = "";
+    String overflow = ""; // if our bucket is longer than MAX_INCOMING_PACKET_SIZE, we need to split into separate buckets
+
+/*     while(!commandBucket.isEmpty()){
+      
+    } */
     for(Command command: commandBucket){
       if (command == null) {
         throw new NullPointerException();

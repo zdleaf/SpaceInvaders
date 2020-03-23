@@ -3,7 +3,12 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\network\\UdpSender.java",
 		"bookmarks": [
 			{
-				"line": 82,
+				"line": 40,
+				"column": 39,
+				"label": ""
+			},
+			{
+				"line": 81,
 				"column": 61,
 				"label": ""
 			}
@@ -110,7 +115,7 @@
 			{
 				"line": 62,
 				"column": 66,
-				"label": "skip packets randomly"
+				"label": "SERVER send packet"
 			}
 		]
 	}

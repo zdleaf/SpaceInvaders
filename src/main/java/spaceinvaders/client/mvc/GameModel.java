@@ -113,10 +113,10 @@ public class GameModel implements Model {
     - if bucket is empty, set timestamp
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
-
-    NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
-    See UDPHandler 
-    private static final int MAX_INCOMING_PACKET_SIZE = 256;
+  // NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
+  // See UDPHandler 
+  // private static final int MAX_INCOMING_PACKET_SIZE = 1024;
+  // implement in handleBucket()
     */
     if (connection == null) {
       throw new NullPointerException();

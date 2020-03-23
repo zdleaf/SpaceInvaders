@@ -22,7 +22,7 @@ import spaceinvaders.utility.ServiceState;
  * <p>UDP is used for repetitive commands during the game.
  */
 public class UdpHandler implements Service<Void> {
-  private static final int MAX_INCOMING_PACKET_SIZE = 1024;
+  private static final int MAX_INCOMING_PACKET_SIZE = 256;
 
   private final Service<Void> receiver;
   private final Service<Void> sender;
