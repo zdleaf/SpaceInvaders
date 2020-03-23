@@ -18,5 +18,100 @@
 				"label": ""
 			}
 		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\ClientConfig.java",
+		"bookmarks": [
+			{
+				"line": 27,
+				"column": 71,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\mvc\\GameController.java",
+		"bookmarks": [
+			{
+				"line": 114,
+				"column": 100,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\command\\client\\SetPlayerIdCommand.java",
+		"bookmarks": [
+			{
+				"line": 34,
+				"column": 89,
+				"label": "send ping and other config info to server"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\command\\CommandBuilder.java",
+		"bookmarks": [
+			{
+				"line": 37,
+				"column": 94,
+				"label": "build commandArray from '~' delimited JSON"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\GameLoop.java",
+		"bookmarks": [
+			{
+				"line": 93,
+				"column": 36,
+				"label": "drainCommands - drain command[] into commandBuf"
+			},
+			{
+				"line": 107,
+				"column": 47,
+				"label": "pull + execute commands from each player"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\network\\Connection.java",
+		"bookmarks": [
+			{
+				"line": 87,
+				"column": 30,
+				"label": ""
+			},
+			{
+				"line": 106,
+				"column": 36,
+				"label": ""
+			},
+			{
+				"line": 162,
+				"column": 97,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\network\\udp\\UdpHandler.java",
+		"bookmarks": [
+			{
+				"line": 24,
+				"column": 59,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\network\\udp\\UdpSender.java",
+		"bookmarks": [
+			{
+				"line": 62,
+				"column": 66,
+				"label": "skip packets randomly"
+			}
+		]
 	}
 ]
