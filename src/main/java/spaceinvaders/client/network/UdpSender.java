@@ -58,39 +58,34 @@ class UdpSender implements Chain<Command> {
     }
   }
   
-/*   NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
-  See UDPHandler 
-  private static final int MAX_INCOMING_PACKET_SIZE = 1024; 
-
-  check if data + new cmd > 1024, if so, split into multiple packets
-
+/*   
+    handleBucket() 
+    - recursively splits the commandBucket into packets smaller than MAX_INCOMING_PACKET_SIZE (See UDPHandler) and sends the packets
 */
-  // if our bucket is longer than MAX_INCOMING_PACKET_SIZE, we need to split into separate buckets
   @Override
   public void handleBucket(ArrayList<Command> commandBucket){
-    // WRONG - at the moment it's waiting for the bucket to fill up-  we do not want to wait till we reach MAX packet size, we can send packets less than this
+    if(commandBucket.size() == 0){ return; } // base case for recursion
     String data = "";
-
-    for(int idx = 0; idx < commandBucket.size(); idx++){
-      Command command = commandBucket.get(idx);
-      if (command == null) {
+    int idx;
+    for(idx = 0; idx < commandBucket.size(); idx++){
+      if (commandBucket.get(idx) == null) {
         throw new NullPointerException();
       }
-      if (command.getProtocol().equals(UDP)) {
-        String combined = data + command.toJson() + "~";
-        if(combined.length() < UdpHandler.getPacketSize()){ // MAX_INCOMING_PACKET_SIZE from SERVER
-          data += command.toJson() + "~"; // construct our combined JSON string delimited by "~"
-          // break;
-        } else { // send the bucket and start preparing the next bucket
-          System.out.print("handleBucket - MULTI: " + data + "\n");
-          DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
-          sendPacket(packet);
-          data = "";
-        }
+      if (commandBucket.get(idx).getProtocol().equals(UDP)) {
+        if(data.length() + commandBucket.get(idx).toJson().length() < UdpHandler.getPacketSize()){
+          data += commandBucket.get(idx).toJson() + "~";
+        } else { break; }
       }
-    }
+    } 
 
-    // do we need if nextChain = handle if not UDP?
+    // send the bucket
+    //System.out.print("handleBucket - MULTI: " + data + "\n");
+    DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+    sendPacket(packet);
+
+    // recursively call handleBucket on the tail
+    ArrayList<Command> overflow = new ArrayList<Command>(commandBucket.subList(idx, commandBucket.size()));
+    handleBucket(overflow);
   }
 
   @Override
@@ -103,7 +98,6 @@ class UdpSender implements Chain<Command> {
       LOGGER.log(SEVERE,exception.toString(),exception);
     }
   }
-
 
   @Override
   public void setNext(Chain<Command> nextChain) {

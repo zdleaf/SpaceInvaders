@@ -104,19 +104,16 @@ public class GameModel implements Model {
    *
    * @throws NullPointerException if there is no connection.
    */
-  // add bucket here - we want to group commands into buckets, then send at once
   @Override
   public void doCommand(Command command) {
-
     /* 
     bucket synchro
     - if bucket is empty, set timestamp
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
-  // NEED TO CHECK MAXIMUM PACKET SIZE - JSON BUCKET IS BEING CUT SHORT
-  // See UDPHandler 
-  // private static final int MAX_INCOMING_PACKET_SIZE = 1024;
-  // implement in handleBucket()
+
+    NEED TO SEND BUCKET IF NO FURTHER COMMANDS RECEIVED - FLAG?
+    JUST HAVE A BUCKET, AND REGULARLY SEND COMMANDS EVERY X ms (unless bucket empty)
     */
     if (connection == null) {
       throw new NullPointerException();
@@ -140,25 +137,6 @@ public class GameModel implements Model {
       commandBucket.add(command);
     }
     lastTimestamp = currentTime; // reset the timestamp
-
-/*       lastTimestamp = currentTime; // reset the timestamp
-      commandBucket.add(command);
-    } else {
-      long difference = currentTime - lastTimestamp;
-      if(difference <= 3000){
-        LOGGER.info("TIMESTAMP DIFF <3000: " + difference);
-        commandBucket.add(command);
-      } else { 
-        LOGGER.info("TIMESTAMP DIFF>3000: " + difference);
-        LOGGER.info("CLIENT SENDING BUCKET: " + difference);
-        connection.send(commandBucket);
-        commandBucket.clear();
-      }
-    } */
-
-    //connection.send(command);
-    //LOGGER.info("CLIENT: " + command.getName());
-
   }
 
   @Override
