@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class GameModel implements Model {
   private static final Logger LOGGER = Logger.getLogger(GameModel.class.getName());
-  private static final int BUCKET_DELAY = 3000;
+  private static final int BUCKET_DELAY = 500;
   private final TransferQueue<String> incomingQueue = new LinkedTransferQueue<>();
   private final CommandDispatcher dispatcher = new CommandDispatcher();
   private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
