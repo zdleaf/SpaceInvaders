@@ -44,15 +44,18 @@ public class GameModel implements Model {
   private final ServiceState gameState = new ServiceState();
   private NetworkConnection connection;
 
-  private static ArrayList<Command> commandBucket = new ArrayList<Command>();;
-  private static long lastTimestamp;
+  private static ArrayList<Command> commandBucket = new ArrayList<Command>();
 
   // schedule the bucket to be sent every X seconds with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
   Runnable sendBucket = new Runnable() {
     public void run() {
-        System.out.println("Hello world");
+        if(!commandBucket.isEmpty()){
+          System.out.println("Sending bucket: " + commandBucket);
+          connection.send(commandBucket);
+          commandBucket.clear();
+        }
     }
   };
 
@@ -115,41 +118,20 @@ public class GameModel implements Model {
   }
 
   /**
-   * Send a command to the server.
+   * Add a command to the commandBucket to be sent every BUCKET_DELAY ms - see sendBucket()
    *
    * @throws NullPointerException if there is no connection.
    */
   @Override
   public void doCommand(Command command) {
-    /* 
-    bucket synchro
-    - if bucket is empty, set timestamp
-    - if command buffer is not full/time up, add to bucket but do not send
-    - if command buffer time is up, send the bucket to the server and clear bucket
-
-    */
     if (connection == null) {
       throw new NullPointerException();
     }
-    final long currentTime = System.currentTimeMillis();
-    long timeDiff = currentTime - lastTimestamp;
     if (command.getName() == "spaceinvaders.command.server.ConfigurePlayerCommand"){ // do not bucket the initial ConfigurePlayerCommand - we must respond within 1s or connection is closed
       connection.send(command);
-      lastTimestamp = System.currentTimeMillis(); // initialise with current time
-    }
-    else if(commandBucket.isEmpty() && timeDiff > BUCKET_DELAY){ // if it's just a single command
-      LOGGER.info("CLIENT SENDING INDIVIDUAL: " + timeDiff + " : " + command.getName());
-      connection.send(command);
-    } 
-    else if(!commandBucket.isEmpty() && timeDiff > BUCKET_DELAY){ // if we have a bucket of commands send the bucket
-      LOGGER.info("CLIENT SENDING BUCKET: " + timeDiff);
-      connection.send(commandBucket);
-      commandBucket.clear();
-    } 
-    else {
+    } else {
       commandBucket.add(command);
     }
-    lastTimestamp = currentTime; // reset the timestamp
   }
 
   @Override
