@@ -24,6 +24,9 @@ import spaceinvaders.utility.ServiceState;
 import java.lang.System; // for currentTimeMillis()
 import java.util.ArrayList; // for commandBucket;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Provides the game data.
  *
@@ -44,6 +47,15 @@ public class GameModel implements Model {
   private static ArrayList<Command> commandBucket = new ArrayList<Command>();;
   private static long lastTimestamp;
 
+  // schedule the bucket to be sent every X seconds with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
+  ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+  Runnable sendBucket = new Runnable() {
+    public void run() {
+        System.out.println("Hello world");
+    }
+  };
+
   public GameModel() {
     dispatcherExecutor.submit(dispatcher);
   }
@@ -58,8 +70,11 @@ public class GameModel implements Model {
    * @throws RejectedExecutionException if a task cannot be scheduled for execution.
    */
   @Override
-  public Void call() throws SocketOpeningException, ExecutionException,
-         InterruptedException {
+  public Void call() throws SocketOpeningException, ExecutionException, InterruptedException {
+
+    // send our command buckets every BUCKET_DELAY ms
+    executor.scheduleAtFixedRate(sendBucket, 0, BUCKET_DELAY, TimeUnit.MILLISECONDS);
+
     // This will open up a network connection, and might throw exceptions.
     connection = new NetworkConnection(incomingQueue);
     Future<?> connectionFuture = connectionExecutor.submit(connection);
@@ -112,8 +127,6 @@ public class GameModel implements Model {
     - if command buffer is not full/time up, add to bucket but do not send
     - if command buffer time is up, send the bucket to the server and clear bucket
 
-    NEED TO SEND BUCKET IF NO FURTHER COMMANDS RECEIVED - FLAG?
-    JUST HAVE A BUCKET, AND REGULARLY SEND COMMANDS EVERY X ms (unless bucket empty)
     */
     if (connection == null) {
       throw new NullPointerException();

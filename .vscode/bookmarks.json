@@ -1,34 +1,14 @@
 [
 	{
-		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\network\\UdpSender.java",
-		"bookmarks": [
-			{
-				"line": 41,
-				"column": 39,
-				"label": ""
-			},
-			{
-				"line": 62,
-				"column": 121,
-				"label": ""
-			},
-			{
-				"line": 65,
-				"column": 61,
-				"label": ""
-			}
-		]
-	},
-	{
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\mvc\\GameModel.java",
 		"bookmarks": [
 			{
-				"line": 34,
+				"line": 37,
 				"column": 47,
 				"label": ""
 			},
 			{
-				"line": 109,
+				"line": 127,
 				"column": 18,
 				"label": ""
 			}
