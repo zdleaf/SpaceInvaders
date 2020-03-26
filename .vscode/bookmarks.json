@@ -55,6 +55,21 @@
 		]
 	},
 	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\Game.java",
+		"bookmarks": [
+			{
+				"line": 62,
+				"column": 43,
+				"label": ""
+			},
+			{
+				"line": 203,
+				"column": 51,
+				"label": ""
+			}
+		]
+	},
+	{
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\GameLoop.java",
 		"bookmarks": [
 			{

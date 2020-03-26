@@ -16,6 +16,7 @@ public class Player {
   private String name;
   private Integer teamSize;
   private Integer ping;
+  private Integer delay = 0;
 
   /**
    * Wrap a player around the specified connection.
@@ -105,6 +106,13 @@ public class Player {
     this.ping = ping;
   }
 
+  public Integer getDelay() {
+    return delay;
+  }
+
+  public void setDelay(Integer delay) {
+    this.delay = delay;
+  }
 
   /**
    * Set the remote port to which UDP packets should be sent.

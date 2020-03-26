@@ -6,7 +6,7 @@ class Ping
     // Prints "Hello, World" to the terminal window. 
     public static void main(String[] args) 
     { 
-        List<Integer> ping = Arrays.asList(700, 200, 300, 400);
+        List<Integer> ping = Arrays.asList(200, 500, 50, 350);
         List<Integer> diff = Arrays.asList(0, 0, 0, 0);
 
         for(int i = 0; i < ping.size(); i++){

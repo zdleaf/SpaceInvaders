@@ -59,9 +59,34 @@ class Game implements Service<Void> {
     /* Build world. */
     WorldDirector director = new WorldDirector(new ClassicWorldBuilder());
     List<Integer> idList = new ArrayList<>(team.size());
+
+    // set delay for bucket synchronization
+    // compare the differences between all Players pings, and set delay for each one to be the diff between their ping and the max ping
+    for(int i = 0; i < team.size(); i++){
+      for(int j = i+1; j < team.size(); j++){
+          System.out.println(i + "," + j);
+          Integer temp = 0;
+          if(team.get(j).getPing() > team.get(i).getPing()){
+              temp = team.get(j).getPing() - team.get(i).getPing();
+              System.out.println(temp);
+              if(team.get(i).getDelay() < temp){
+                team.get(i).setDelay(temp);
+              }
+              
+          }
+          else if(team.get(i).getPing() > team.get(j).getPing()){
+              temp = team.get(i).getPing() - team.get(j).getPing();
+              System.out.println(temp);
+              if(team.get(j).getDelay() < temp){
+                team.get(j).setDelay(temp);
+              }
+          }
+      }
+    }
+
     for (Player player : team) {
       idList.add(player.getId());
-      System.out.println("ID: " + player.getId() + ", ping: " + player.getPing()); // print ping and ID for each player
+      System.out.println("ID: " + player.getId() + ", ping: " + player.getPing() + ", delay: " + player.getDelay()); // print ping, delay and ID for each player
     }
     director.makeWorld(idList);
     world = director.getWorld();
@@ -176,11 +201,12 @@ class Game implements Service<Void> {
    *
    * @throws NullPointerException if the argument is {@code null}.
    */
-  private void distributeCommand(Command command) {
+  private void distributeCommand(Command command) throws InterruptedException {
     if (command == null) {
       throw new NullPointerException();
     }
     for (Player player : team) {
+      Thread.sleep(player.getDelay()); // delay sending commands by specific amount per Player (bucket synchro)
       player.push(command);
     }
   }
