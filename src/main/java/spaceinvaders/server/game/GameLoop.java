@@ -99,7 +99,7 @@ public class GameLoop implements Service<Void> {
   }
 
   /** Handle user input that has happened since the last call. */
-  public void processInput() {
+  public void processInput() throws InterruptedException {
     Iterator<Player> it = team.iterator();
     Player player;
     while (it.hasNext()) {
@@ -110,6 +110,7 @@ public class GameLoop implements Service<Void> {
         // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
         for (Command command : commands) {
           command.setExecutor(this);
+          // Thread.sleep(player.getDelay()); // bucket synchro: delay execution of commands by ping difference for fairness
           command.execute();
         }
       } else {

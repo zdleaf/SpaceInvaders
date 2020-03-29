@@ -25,7 +25,7 @@ public class ClientConfig {
   private Integer serverPort;
   private String userName;
   private Integer udpIncomingPort;
-  private Integer ping = ThreadLocalRandom.current().nextInt(100, 250);
+  private Integer ping = ThreadLocalRandom.current().nextInt(5, 100);
 
   private ClientConfig() {}
 

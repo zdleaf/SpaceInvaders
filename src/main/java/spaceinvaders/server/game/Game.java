@@ -86,7 +86,7 @@ class Game implements Service<Void> {
 
     for (Player player : team) {
       idList.add(player.getId());
-      System.out.println("ID: " + player.getId() + ", ping: " + player.getPing() + ", delay: " + player.getDelay()); // print ping, delay and ID for each player
+      System.out.println("ID: " + player.getId() + ", name: " + player.getName() + ", ping: " + player.getPing() + ", delay: " + player.getDelay()); // print ping, delay and ID for each player
     }
     director.makeWorld(idList);
     world = director.getWorld();
@@ -206,7 +206,7 @@ class Game implements Service<Void> {
       throw new NullPointerException();
     }
     for (Player player : team) {
-      Thread.sleep(player.getDelay()); // delay sending commands by specific amount per Player (bucket synchro)
+      Thread.sleep(player.getDelay()); // delay sending update commands by specific amount per Player (bucket synchro)
       player.push(command);
     }
   }
