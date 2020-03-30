@@ -93,17 +93,22 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\network\\Connection.java",
 		"bookmarks": [
 			{
-				"line": 87,
+				"line": 88,
 				"column": 30,
 				"label": ""
 			},
 			{
-				"line": 106,
+				"line": 107,
 				"column": 36,
 				"label": ""
 			},
 			{
-				"line": 162,
+				"line": 148,
+				"column": 60,
+				"label": ""
+			},
+			{
+				"line": 174,
 				"column": 97,
 				"label": ""
 			}
@@ -126,6 +131,41 @@
 				"line": 62,
 				"column": 66,
 				"label": "SERVER send packet"
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\game\\Entity.java",
+		"bookmarks": [
+			{
+				"line": 69,
+				"column": 70,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\GamePanel.java",
+		"bookmarks": [
+			{
+				"line": 180,
+				"column": 97,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\entities\\GraphicalEntity.java",
+		"bookmarks": [
+			{
+				"line": 71,
+				"column": 80,
+				"label": ""
+			},
+			{
+				"line": 78,
+				"column": 32,
+				"label": ""
 			}
 		]
 	}

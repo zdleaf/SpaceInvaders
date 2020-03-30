@@ -38,6 +38,7 @@ public class Connection implements Service<Void> {
   private final CommandDirector director = new CommandDirector(new ServerCommandBuilder());
   private final ServiceState state = new ServiceState();
   private SenderChain sender;
+  private static int counter = 0;
 
   /**
    * @param socket an already opened TCP socket.
@@ -143,7 +144,19 @@ public class Connection implements Service<Void> {
     if (command == null) {
       throw new NullPointerException();
     }
-    sender.handle(command);
+
+    /*
+    // TEST SMOOTH CORRECTIONS - skip every 9th move command
+    if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand"){
+      if(counter == 10){
+        sender.handle(command);
+        counter = 0;
+      } else { counter++; }
+    } else { sender.handle(command); }
+*/
+
+     sender.handle(command);
+
     // print the command to the log
 /*     String cmd = command.getName();
     if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand"){

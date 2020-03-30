@@ -178,7 +178,7 @@ class GamePanel extends JPanel {
    *
    * @throws NullPointerException if {@code id} could not be found.
    */
-  public void relocateEntity(int id, int newX, int newY) {
+  public void relocateEntity(int id, int newX, int newY) { // client side smooth corrections here
     final GraphicalEntity entity = entityMap.get(id);
     if (entity == null) {
       throw new NullPointerException();

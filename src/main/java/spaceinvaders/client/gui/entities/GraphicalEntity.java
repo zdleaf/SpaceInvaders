@@ -69,8 +69,20 @@ public abstract class GraphicalEntity implements Cloneable, Drawable {
    * @param newX new coordinate on x-axis.
    * @param newY new coordinate on y-axis.
    */
-  public void relocate(int newX, int newY) {
-    body.setPos(newX,newY);
+  public void relocate(int newX, int newY) { // smooth corrections here
+    int oldX = body.getX();
+    int xDiff = newX - oldX;
+
+    //System.out.println("Moving X from: " + oldX + " to " + newX + " - diff: " + xDiff);
+    int i = oldX;
+    while(i != newX){
+      // TEST SMOOTH CORRECTIONS
+      // System.out.println("i = " + i);
+      body.setPos(i,newY);
+      if(xDiff < 0){i--;}
+      if(xDiff > 0){i++;}
+    }
+    //body.setPos(newX, newY);
   }
 
   /**
@@ -103,7 +115,7 @@ public abstract class GraphicalEntity implements Cloneable, Drawable {
   /**
    * @throws NullPointerException if the entity does not have a body.
    */
-  protected int getX() {
+  public int getX() {
     if (body == null) {
       throw new NullPointerException();
     }
@@ -113,7 +125,7 @@ public abstract class GraphicalEntity implements Cloneable, Drawable {
   /**
    * @throws NullPointerException - if the entity does not have a body.
    */
-  protected int getY() {
+  public int getY() {
     if (body == null) {
       throw new NullPointerException();
     }
