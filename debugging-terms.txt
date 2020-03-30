@@ -3,3 +3,6 @@ CLIENT
 FULL JSON
 JSON SPLIT
 getCommandArray()
+
+
+MoveEntityCommand: {"entityId":176448112,"newX":596,"newY":647,"name":"spaceinvaders.command.client.MoveEntityCommand"}

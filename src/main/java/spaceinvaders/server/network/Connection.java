@@ -155,12 +155,15 @@ public class Connection implements Service<Void> {
     } else { sender.handle(command); }
 */
 
-     sender.handle(command);
+    sender.handle(command);
 
     // print the command to the log
 /*     String cmd = command.getName();
     if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand"){
       LOGGER.info("SERVER: " + cmd);
+    }
+    if(cmd == "spaceinvaders.command.client.MoveEntityCommand"){
+      System.out.println("MoveEntityCommand: " + command.toJson());
     } */
   }
 
