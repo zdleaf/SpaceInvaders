@@ -66,10 +66,14 @@ class GamePanel extends JPanel {
             if (entity == null) {
               throw new NullPointerException();
             }
-            if(direction == 1){ // previous move was right
+            if(direction == 0) { // not moved
+              System.out.println("No movement detected");
+              return; 
+            } 
+            else if(direction == 1){ // previous move was right
               System.out.println("Moving right: ");
               entity.relocate(entity.getX()+config.speed().player().getDistance(), entity.getY()); // increase x by player move speed
-            } else { // previous move was left
+            } else if (direction == 2){ // previous move was left
               System.out.println("Moving left: ");
               entity.relocate(entity.getX()-config.speed().player().getDistance(), entity.getY());
             }
@@ -219,7 +223,7 @@ class GamePanel extends JPanel {
       throw new NullPointerException();
     }
     Integer direction;
-    if(entity.getX() - newX < 0){ direction = 1; } else { direction = 0; } // 1 = player moving right, 0 = left
+    if(entity.getX() - newX < -1){ direction = 1; } else if (entity.getX() - newX > 1 ){ direction = 2; } else { direction = 0; } // 0 = player not moving, 1 = moving right, 2 = moving left
     entity.relocate(newX,newY);
     prevEntityPos.put(id, direction); // store the last direction of the the entity
   }

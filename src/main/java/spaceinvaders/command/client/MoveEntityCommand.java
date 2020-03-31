@@ -32,7 +32,7 @@ public class MoveEntityCommand extends Command {
   @Override
   public void execute() {
     for (View view : executor.getViews()) {
-      System.out.print("CLIENT: MoveEntity: " + entityId);
+      System.out.print("CLIENT: MoveEntity: " + entityId + "\n");
       view.moveEntity(entityId,newX,newY);
     }
   }

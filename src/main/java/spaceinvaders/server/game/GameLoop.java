@@ -28,8 +28,6 @@ import spaceinvaders.server.player.Player;
 import spaceinvaders.utility.AutoSwitch;
 import spaceinvaders.utility.Service;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 /** Provides methods for handling player input and advancing the game simulation. */
 public class GameLoop implements Service<Void> {
   private static final int GUARD_PIXELS = 32;
@@ -47,6 +45,8 @@ public class GameLoop implements Service<Void> {
   private final Integer invadersVelocityY = config.speed().invader().getDistance() * 2;
   private Integer invadersVelocityX = config.speed().invader().getDistance();
   private boolean gameOver = false;
+
+  private final AutoSwitch playerPosUpdate = new AutoSwitch(150); // ms to automatically update player position
 
   /**
    * @param team human players.
@@ -77,6 +77,7 @@ public class GameLoop implements Service<Void> {
     future.add(threadPool.submit(invadersMovement));
     future.add(threadPool.submit(bulletsMovement));
     future.add(threadPool.submit(invadersShooting));
+    future.add(threadPool.submit(playerPosUpdate));
     return null;
   }
 
@@ -85,6 +86,7 @@ public class GameLoop implements Service<Void> {
     invadersMovement.shutdown();
     bulletsMovement.shutdown();
     invadersShooting.shutdown();
+    playerPosUpdate.shutdown();
     for (Future<?> it : future) {
       it.cancel(true);
     }
@@ -207,6 +209,23 @@ public class GameLoop implements Service<Void> {
     }
 
     Iterator<LogicEntity> it;
+
+    // SERVER: automatically send player position updates
+    if (playerPosUpdate.isOn()) {
+      it = world.getIterator(EntityEnum.PLAYER);
+      while (it.hasNext()) {
+        LogicEntity player = it.next();
+        System.out.print("Sending SERVER player update\n");
+        movePlayer(player,player.getX());
+      }
+
+/*       it = world.getIterator(PLAYER);
+      while (it.hasNext()) {
+        LogicEntity player = it.next();
+        player.getX()
+      } */
+      playerPosUpdate.toggle();
+    }
 
     /* Move invaders */
     if (invadersMovement.isOn()) {
