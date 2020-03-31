@@ -46,7 +46,8 @@ public class GameLoop implements Service<Void> {
   private Integer invadersVelocityX = config.speed().invader().getDistance();
   private boolean gameOver = false;
 
-  private final AutoSwitch playerPosUpdate = new AutoSwitch(150); // ms to automatically update player position
+  private final Integer PLAYER_POS_UPDATE = 200;
+  private final AutoSwitch playerPosUpdate = new AutoSwitch(PLAYER_POS_UPDATE); // ms to automatically update player position
 
   /**
    * @param team human players.
@@ -112,7 +113,6 @@ public class GameLoop implements Service<Void> {
         // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
         for (Command command : commands) {
           command.setExecutor(this);
-          // Thread.sleep(player.getDelay()); // bucket synchro: delay execution of commands by ping difference for fairness
           command.execute();
         }
       } else {
@@ -210,20 +210,13 @@ public class GameLoop implements Service<Void> {
 
     Iterator<LogicEntity> it;
 
-    // SERVER: automatically send player position updates
+    // SERVER: automatically send player position updates to clients
     if (playerPosUpdate.isOn()) {
       it = world.getIterator(EntityEnum.PLAYER);
       while (it.hasNext()) {
         LogicEntity player = it.next();
-        System.out.print("Sending SERVER player update\n");
         movePlayer(player,player.getX());
       }
-
-/*       it = world.getIterator(PLAYER);
-      while (it.hasNext()) {
-        LogicEntity player = it.next();
-        player.getX()
-      } */
       playerPosUpdate.toggle();
     }
 

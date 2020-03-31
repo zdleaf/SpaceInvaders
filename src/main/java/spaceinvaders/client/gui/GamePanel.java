@@ -50,31 +50,33 @@ class GamePanel extends JPanel {
   private Couple<Integer,Integer> centerImgPos;
   private Boolean gameOn;
 
-  // Dead Reckoning
-  private HashMap<Integer, Integer> prevEntityPos = new HashMap<Integer, Integer>(); // store the previous position to calculate dead reck
+  // Dead Reckoning - to test set PLAYER_POS_UPDATE in GameLoop to 5000 and DEADRECK_DELAY below to 500
+  private final Boolean DEADRECK_TEST = false;
+  private HashMap<Integer, Integer> prevEntityDirection = new HashMap<Integer, Integer>(); // store the previous direction to calculate dead reck
+  private HashMap<Integer, Integer> prevEntityPosition = new HashMap<Integer, Integer>(); // store the previous position (key=entityID, value=x coord)
   // schedule the position of each player to be updated every X ms
-  private final int DEADRECK_DELAY = 500; // milliseconds
+  private final int DEADRECK_DELAY = 300; // milliseconds
   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
   Runnable deadReckon = new Runnable() {
     public void run() {
-        if(!prevEntityPos.isEmpty()){
-          System.out.println("Dead reckoning: ");
-          for(Map.Entry<Integer, Integer> entry : prevEntityPos.entrySet()){
-            Integer id = entry.getKey(); Integer direction = entry.getValue();
+        if(!prevEntityDirection.isEmpty()){
+          for(Map.Entry<Integer, Integer> entry : prevEntityDirection.entrySet()){
+            //System.out.println(prevEntityDirection);
+            Integer id = entry.getKey(); 
+            Integer direction = entry.getValue();
             final GraphicalEntity entity = entityMap.get(id);
             if (entity == null) {
               throw new NullPointerException();
             }
             if(direction == 0) { // not moved
-              System.out.println("No movement detected");
-              return; 
+              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] No movement detected"); }
             } 
             else if(direction == 1){ // previous move was right
-              System.out.println("Moving right: ");
+              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] Moving right"); }
               entity.relocate(entity.getX()+config.speed().player().getDistance(), entity.getY()); // increase x by player move speed
             } else if (direction == 2){ // previous move was left
-              System.out.println("Moving left: ");
+              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] Moving left"); }
               entity.relocate(entity.getX()-config.speed().player().getDistance(), entity.getY());
             }
           }
@@ -222,10 +224,15 @@ class GamePanel extends JPanel {
     if (entity == null) {
       throw new NullPointerException();
     }
-    Integer direction;
-    if(entity.getX() - newX < -1){ direction = 1; } else if (entity.getX() - newX > 1 ){ direction = 2; } else { direction = 0; } // 0 = player not moving, 1 = moving right, 2 = moving left
+    if(prevEntityPosition.containsKey(id)){ 
+      Integer direction;
+      if(prevEntityPosition.get(id) - newX < -1){ direction = 1; } // 0 = player not moving, 1 = moving right, 2 = moving left
+      else if (prevEntityPosition.get(id) - newX > 1 ){ direction = 2; }
+      else { direction = 0; } 
+      prevEntityDirection.put(id, direction); // store the last direction of the the entity
+    }
     entity.relocate(newX,newY);
-    prevEntityPos.put(id, direction); // store the last direction of the the entity
+    prevEntityPosition.put(id, newX); // store the last position
   }
 
   /**
