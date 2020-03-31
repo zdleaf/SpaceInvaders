@@ -22,10 +22,16 @@ import spaceinvaders.client.gui.entities.GraphicalEntityVisitor;
 import spaceinvaders.client.gui.entities.GraphicsFactory;
 import spaceinvaders.client.gui.entities.PaintingVisitor;
 import spaceinvaders.client.gui.entities.Player;
+import spaceinvaders.command.server.MovePlayerRightCommand;
 import spaceinvaders.game.Entity;
 import spaceinvaders.game.EntityEnum;
 import spaceinvaders.game.GameConfig;
 import spaceinvaders.utility.Couple;
+
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main panel of the game.
@@ -43,10 +49,38 @@ class GamePanel extends JPanel {
   private BufferedImage centerImg;
   private Couple<Integer,Integer> centerImgPos;
   private Boolean gameOn;
+
+  // Dead Reckoning
+  private HashMap<Integer, Integer> prevEntityPos = new HashMap<Integer, Integer>(); // store the previous position to calculate dead reck
+  // schedule the position of each player to be updated every X ms
+  private final int DEADRECK_DELAY = 500; // milliseconds
+  ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+  Runnable deadReckon = new Runnable() {
+    public void run() {
+        if(!prevEntityPos.isEmpty()){
+          System.out.println("Dead reckoning: ");
+          for(Map.Entry<Integer, Integer> entry : prevEntityPos.entrySet()){
+            Integer id = entry.getKey(); Integer direction = entry.getValue();
+            final GraphicalEntity entity = entityMap.get(id);
+            if (entity == null) {
+              throw new NullPointerException();
+            }
+            if(direction == 1){ // previous move was right
+              System.out.println("Moving right: ");
+              entity.relocate(entity.getX()+config.speed().player().getDistance(), entity.getY()); // increase x by player move speed
+            } else { // previous move was left
+              System.out.println("Moving left: ");
+              entity.relocate(entity.getX()-config.speed().player().getDistance(), entity.getY());
+            }
+          }
+        }
+    }
+  };
   
   public GamePanel() {
     setBackground(Color.BLACK);
-    setForeground(Color.BLACK);
+  setForeground(Color.BLACK);
   }
 
   @Override
@@ -108,6 +142,7 @@ class GamePanel extends JPanel {
    * @throws NullPointerException if argument is {@code null}.
    */
   public void refreshEntities(List<Entity> updates) {
+    executor.scheduleAtFixedRate(deadReckon, 0, DEADRECK_DELAY, TimeUnit.MILLISECONDS); // move player based on their previous movement direction
     if (updates == null) {
       throw new NullPointerException();
     }
@@ -178,12 +213,15 @@ class GamePanel extends JPanel {
    *
    * @throws NullPointerException if {@code id} could not be found.
    */
-  public void relocateEntity(int id, int newX, int newY) { // client side smooth corrections here
+  public void relocateEntity(int id, int newX, int newY) { // client side dead reckoning here
     final GraphicalEntity entity = entityMap.get(id);
     if (entity == null) {
       throw new NullPointerException();
     }
+    Integer direction;
+    if(entity.getX() - newX < 0){ direction = 1; } else { direction = 0; } // 1 = player moving right, 0 = left
     entity.relocate(newX,newY);
+    prevEntityPos.put(id, direction); // store the last direction of the the entity
   }
 
   /**

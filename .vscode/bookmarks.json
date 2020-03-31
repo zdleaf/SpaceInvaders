@@ -73,18 +73,23 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\GameLoop.java",
 		"bookmarks": [
 			{
-				"line": 93,
+				"line": 95,
 				"column": 36,
 				"label": "drainCommands - drain command[] into commandBuf"
 			},
 			{
-				"line": 107,
+				"line": 109,
 				"column": 47,
 				"label": "pull + execute commands from each player"
 			},
 			{
-				"line": 113,
+				"line": 115,
 				"column": 28,
+				"label": ""
+			},
+			{
+				"line": 152,
+				"column": 39,
 				"label": ""
 			}
 		]
@@ -145,10 +150,25 @@
 		]
 	},
 	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\GameGraphics.java",
+		"bookmarks": [
+			{
+				"line": 200,
+				"column": 60,
+				"label": ""
+			}
+		]
+	},
+	{
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\GamePanel.java",
 		"bookmarks": [
 			{
-				"line": 180,
+				"line": 52,
+				"column": 19,
+				"label": ""
+			},
+			{
+				"line": 215,
 				"column": 97,
 				"label": ""
 			}
