@@ -12,3 +12,7 @@ Dead Reckoning
 - to test and see how ships automatically move in absence of server update
     - GameLoop.java - set PLAYER_POS_UPDATE in GameLoop to 5000
     - GamePanel.java - set DEADRECK_TEST to true, DEADRECK_DELAY below to 500 
+
+Bucket Synchro
+    - Sending bucket:
+    - getCommandArray():
