@@ -51,7 +51,8 @@ class GamePanel extends JPanel {
   private Boolean gameOn;
 
   // Dead Reckoning - to test set PLAYER_POS_UPDATE in GameLoop to 5000 and DEADRECK_DELAY below to 500
-  private final Boolean DEADRECK_TEST = false;
+  private final Boolean DEADRECK_ENABLED = true;
+  private final Boolean DEADRECK_DEBUG = false;
   private HashMap<Integer, Integer> prevEntityDirection = new HashMap<Integer, Integer>(); // store the previous direction to calculate dead reck
   private HashMap<Integer, Integer> prevEntityPosition = new HashMap<Integer, Integer>(); // store the previous position (key=entityID, value=x coord)
   // schedule the position of each player to be updated every X ms
@@ -70,13 +71,13 @@ class GamePanel extends JPanel {
               throw new NullPointerException();
             }
             if(direction == 0) { // not moved
-              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] No movement detected"); }
+              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] No movement detected"); }
             } 
             else if(direction == 1){ // previous move was right
-              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] Moving right"); }
+              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] Moving right"); }
               entity.relocate(entity.getX()+config.speed().player().getDistance(), entity.getY()); // increase x by player move speed
             } else if (direction == 2){ // previous move was left
-              if(DEADRECK_TEST == true) { System.out.println("Dead reckoning[" + id + "] Moving left"); }
+              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] Moving left"); }
               entity.relocate(entity.getX()-config.speed().player().getDistance(), entity.getY());
             }
           }
@@ -148,7 +149,10 @@ class GamePanel extends JPanel {
    * @throws NullPointerException if argument is {@code null}.
    */
   public void refreshEntities(List<Entity> updates) {
-    executor.scheduleAtFixedRate(deadReckon, 0, DEADRECK_DELAY, TimeUnit.MILLISECONDS); // move player based on their previous movement direction
+
+    // move player based on their previous movement direction
+    if(DEADRECK_ENABLED) { executor.scheduleAtFixedRate(deadReckon, 0, DEADRECK_DELAY, TimeUnit.MILLISECONDS); } 
+
     if (updates == null) {
       throw new NullPointerException();
     }

@@ -103,22 +103,17 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\network\\Connection.java",
 		"bookmarks": [
 			{
-				"line": 88,
+				"line": 90,
 				"column": 30,
 				"label": ""
 			},
 			{
-				"line": 107,
+				"line": 109,
 				"column": 36,
 				"label": ""
 			},
 			{
-				"line": 148,
-				"column": 60,
-				"label": ""
-			},
-			{
-				"line": 178,
+				"line": 181,
 				"column": 97,
 				"label": ""
 			}
@@ -168,7 +163,7 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\GamePanel.java",
 		"bookmarks": [
 			{
-				"line": 221,
+				"line": 224,
 				"column": 97,
 				"label": ""
 			}
@@ -178,8 +173,8 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\gui\\entities\\GraphicalEntity.java",
 		"bookmarks": [
 			{
-				"line": 71,
-				"column": 80,
+				"line": 72,
+				"column": 2,
 				"label": ""
 			},
 			{

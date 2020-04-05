@@ -40,6 +40,8 @@ public class Connection implements Service<Void> {
   private SenderChain sender;
   private static int counter = 0;
 
+  private final Boolean TEST_SMOOTH_CORRECTIONS = false;
+
   /**
    * @param socket an already opened TCP socket.
    * @param outgoingPacketQueue used for sending UDP packets.
@@ -145,19 +147,15 @@ public class Connection implements Service<Void> {
       throw new NullPointerException();
     }
 
-    /*
-    // TEST SMOOTH CORRECTIONS - skip every 9th move command
-    if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand"){
+    // test smooth corrections by only sending one in every 10 player position updates (also delay regular server position updates in GameLoop)
+    if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand" && TEST_SMOOTH_CORRECTIONS){
       if(counter == 10){
         sender.handle(command);
         counter = 0;
       } else { counter++; }
-    } else { sender.handle(command); }
-*/
+    } else { sender.handle(command); } 
 
-    sender.handle(command);
-
-/*     // print the command to the log
+/*  // print the command to the log
     String cmd = command.getName();
     if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand"){
       LOGGER.info("SERVER: " + cmd);
