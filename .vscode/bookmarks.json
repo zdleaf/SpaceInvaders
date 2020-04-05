@@ -28,7 +28,12 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\client\\mvc\\GameController.java",
 		"bookmarks": [
 			{
-				"line": 114,
+				"line": 46,
+				"column": 89,
+				"label": ""
+			},
+			{
+				"line": 117,
 				"column": 100,
 				"label": ""
 			}

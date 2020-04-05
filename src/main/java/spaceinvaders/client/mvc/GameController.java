@@ -43,6 +43,9 @@ public class GameController implements Controller {
   private final ExecutorService modelStateChecker = Executors.newSingleThreadExecutor();
   private Boolean shuttingDown = false;
 
+  private Boolean cheatEnabled;
+  private final String CHEAT_NAME = "zach"; // enable cheats if clients name matches this
+
   /**
    * Couple the controller with a {@link spaceinvaders.client.mvc.Model}.
    */
@@ -113,6 +116,7 @@ public class GameController implements Controller {
       try {
         config.verify();
         System.out.println("CLIENT ping: " + config.getPing()); // print ping and ID for each player
+        if(config.getUserName().equals(CHEAT_NAME)){ cheatEnabled = true; System.out.println("Cheats enabled"); } // enable cheats if username matches
       } catch (InvalidServerAddressException | IllegalPortNumberException
           | InvalidUserNameException exception) {
         displayErrorOnViews(exception);
@@ -257,7 +261,11 @@ public class GameController implements Controller {
     public void handle(KeyEvent event) {
       if (event.getKeyCode() == VK_SPACE) {
         if (model.getGameState()) {
-          model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+          model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
+          if(cheatEnabled){ // shoot another two times if cheat is enabled
+            model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+            model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
+          }
         }
       } else {
         if (nextChain != null) {
