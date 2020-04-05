@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class GameModel implements Model {
   private static final Logger LOGGER = Logger.getLogger(GameModel.class.getName());
-  private static final int BUCKET_DELAY = 500;
+  
   private final TransferQueue<String> incomingQueue = new LinkedTransferQueue<>();
   private final CommandDispatcher dispatcher = new CommandDispatcher();
   private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
@@ -46,9 +46,10 @@ public class GameModel implements Model {
 
   private static ArrayList<Command> commandBucket = new ArrayList<Command>();
 
-  // schedule the bucket to be sent every X seconds with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
+  // schedule the bucket to be sent every X ms with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
+  private static final int BUCKET_DELAY = 500;
   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
+  
   Runnable sendBucket = new Runnable() {
     public void run() {
         if(!commandBucket.isEmpty()){

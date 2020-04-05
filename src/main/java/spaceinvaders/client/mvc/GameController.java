@@ -262,10 +262,10 @@ public class GameController implements Controller {
       if (event.getKeyCode() == VK_SPACE) {
         if (model.getGameState()) {
           model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
-          if(cheatEnabled){ // shoot another two times if cheat is enabled
+/*           if(cheatEnabled){ // shoot another two times if cheat is enabled
             model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
             model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
-          }
+          } */
         }
       } else {
         if (nextChain != null) {

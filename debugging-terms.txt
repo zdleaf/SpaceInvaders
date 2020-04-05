@@ -19,6 +19,7 @@ Dead Reckoning - default: DEADRECK_DELAY = 300, PLAYER_POS_UPDATE 200
     - GamePanel.java - set DEADRECK_DEBUG to true
 
 Bucket Synchro
+    - GameModel.java - BUCKET_DELAY = 
     - Sending bucket:
     - getCommandArray():
     - GameLoop.java - delay execution of move/shoot updates
