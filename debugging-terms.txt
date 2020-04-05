@@ -8,10 +8,10 @@ getCommandArray()
 MoveEntityCommand: {"entityId":176448112,"newX":596,"newY":647,"name":"spaceinvaders.command.client.MoveEntityCommand"}
 
 Smooth Corrections
-- TEST SMOOTH CORRECTIONS
-- Connection.java - TEST_SMOOTH_CORRECTIONS = true
-- GameLoop.java - Set PLAYER_POS_UPDATE to 10000
-- GamePanel.java - Set DEADRECK_ENABLED to false
+    - TEST SMOOTH CORRECTIONS
+    - Connection.java - TEST_SMOOTH_CORRECTIONS = true
+    - GameLoop.java - Set PLAYER_POS_UPDATE to 10000
+    - GamePanel.java - Set DEADRECK_ENABLED to false
 
 Dead Reckoning - default: DEADRECK_DELAY = 300, PLAYER_POS_UPDATE 200
 - to test and see how ships automatically move in absence of server update
@@ -21,4 +21,4 @@ Dead Reckoning - default: DEADRECK_DELAY = 300, PLAYER_POS_UPDATE 200
 Bucket Synchro
     - Sending bucket:
     - getCommandArray():
-    - TODO - delay movement and shooting in GameLoop.java by player.getDelay()
+    - GameLoop.java - delay execution of move/shoot updates

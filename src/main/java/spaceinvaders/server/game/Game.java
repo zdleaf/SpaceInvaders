@@ -206,7 +206,6 @@ class Game implements Service<Void> {
       throw new NullPointerException();
     }
     for (Player player : team) {
-      Thread.sleep(player.getDelay()); // delay sending update commands by specific amount per Player (bucket synchro)
       player.push(command);
     }
   }
