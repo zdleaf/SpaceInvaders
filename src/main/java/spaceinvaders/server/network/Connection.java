@@ -147,8 +147,11 @@ public class Connection implements Service<Void> {
       throw new NullPointerException();
     }
 
+    if(!TEST_SMOOTH_CORRECTIONS){
+      sender.handle(command);
+    } 
     // test smooth corrections by only sending one in every 10 player position updates (also delay regular server position updates in GameLoop)
-    if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand" && TEST_SMOOTH_CORRECTIONS){
+    else if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand" && TEST_SMOOTH_CORRECTIONS){
       if(counter == 10){
         sender.handle(command);
         counter = 0;

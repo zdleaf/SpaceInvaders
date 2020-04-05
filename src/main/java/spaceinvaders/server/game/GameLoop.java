@@ -113,6 +113,11 @@ public class GameLoop implements Service<Void> {
         // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
         for (Command command : commands) {
           command.setExecutor(this);
+          // bucket synchro - delay execution of either player movement or shooting commands
+          if(player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.PlayerShootCommand") || player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.MovePlayerLeftCommand") || player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.MovePlayerRightCommand")){
+            System.out.println("BUCKET SYNCHRO: delaying execution by " + player.getDelay() + "ms");
+            Thread.sleep(player.getDelay());
+          }
           command.execute();
         }
       } else {
