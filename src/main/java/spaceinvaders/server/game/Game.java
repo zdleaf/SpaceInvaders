@@ -108,6 +108,7 @@ class Game implements Service<Void> {
 
 
   // Interest management - only RefreshEntitiesCommand for entities within the players half
+  final GameConfig config = GameConfig.getInstance();
   private void refreshEntities(){
     Iterator<LogicEntity> playerIt;
     playerIt = world.getIterator(EntityEnum.PLAYER);
@@ -116,10 +117,10 @@ class Game implements Service<Void> {
         LogicEntity playerEntity = playerIt.next();
         if (playerEntity.getId() == player.getId()) {
           System.out.println("MATCHED ENTITY WITH PLAYER. Player X pos: " + playerEntity.getX());
-          if(playerEntity.getX() < 750){
+          if(playerEntity.getX() < config.frame().getWidth()/2){
             player.push(new RefreshEntitiesCommand(world.getEntities("left")));
           }
-          else if(playerIt.next().getX() >= 750){
+          else if(playerIt.next().getX() >= config.frame().getWidth()/2){
             player.push(new RefreshEntitiesCommand(world.getEntities("right")));
           }
         }

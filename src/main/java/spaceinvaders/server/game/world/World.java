@@ -11,6 +11,8 @@ import java.util.Map;
 import spaceinvaders.game.Entity;
 import spaceinvaders.game.EntityEnum;
 
+import spaceinvaders.game.GameConfig;
+
 /** Contains all characters that interact in the game. */
 public class World implements WorldPlan {
   private Map<EntityEnum,List<LogicEntity>> entityMap = new HashMap<>();
@@ -113,11 +115,12 @@ public class World implements WorldPlan {
    * @return a list of all currently active entities.
    */
   public List<Entity> getEntities(String flag) {
+    final GameConfig config = GameConfig.getInstance();
     List<Entity> entities = new ArrayList<>();
     if(flag.equals("left")){
       for (List<LogicEntity> value : entityMap.values()) {
         for (LogicEntity it : value) {
-          if(it.getX() < 750){
+          if(it.getX() < config.frame().getWidth()/2){
             entities.add(it.getBase());
           }
         }
@@ -126,7 +129,7 @@ public class World implements WorldPlan {
     if(flag.equals("right")){
       for (List<LogicEntity> value : entityMap.values()) {
         for (LogicEntity it : value) {
-          if(it.getX() >= 750){
+          if(it.getX() >= config.frame().getWidth()/2){
             entities.add(it.getBase());
           }
         }
