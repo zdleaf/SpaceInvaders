@@ -22,4 +22,4 @@ Bucket Synchro
     - GameModel.java - BUCKET_DELAY = 
     - Sending bucket:
     - getCommandArray():
-    - GameLoop.java - delay execution of move/shoot updates
+    - GameLoop.java - delay execution of move/shoot updates - does one delay delay entire chain?

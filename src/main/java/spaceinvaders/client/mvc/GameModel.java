@@ -47,7 +47,7 @@ public class GameModel implements Model {
   private static ArrayList<Command> commandBucket = new ArrayList<Command>();
 
   // schedule the bucket to be sent every X ms with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
-  private static final int BUCKET_DELAY = 500;
+  private static final int BUCKET_DELAY = 250;
   ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
   
   Runnable sendBucket = new Runnable() {

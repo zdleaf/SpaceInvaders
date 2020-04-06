@@ -43,7 +43,7 @@ public class GameController implements Controller {
   private final ExecutorService modelStateChecker = Executors.newSingleThreadExecutor();
   private Boolean shuttingDown = false;
 
-  private Boolean cheatEnabled;
+  private static Boolean cheatEnabled = false; // disabled by default
   private final String CHEAT_NAME = "zach"; // enable cheats if clients name matches this
 
   /**
@@ -261,11 +261,12 @@ public class GameController implements Controller {
     public void handle(KeyEvent event) {
       if (event.getKeyCode() == VK_SPACE) {
         if (model.getGameState()) {
-          model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
-/*           if(cheatEnabled){ // shoot another two times if cheat is enabled
-            model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
-            model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));  
-          } */
+          model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+          if(cheatEnabled){ // cheat: shoot 10 extra bullets at once if cheat is enabled
+            for(int i = 0; i < 10; i++){
+              model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+            }
+          }
         }
       } else {
         if (nextChain != null) {
