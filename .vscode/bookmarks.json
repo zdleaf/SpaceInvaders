@@ -53,9 +53,14 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\command\\CommandBuilder.java",
 		"bookmarks": [
 			{
-				"line": 37,
-				"column": 94,
-				"label": "build commandArray from '~' delimited JSON"
+				"line": 31,
+				"column": 30,
+				"label": ""
+			},
+			{
+				"line": 53,
+				"column": 24,
+				"label": ""
 			}
 		]
 	},

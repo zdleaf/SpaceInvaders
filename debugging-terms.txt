@@ -23,3 +23,7 @@ Bucket Synchro
     - Sending bucket:
     - getCommandArray():
     - GameLoop.java - delay execution of move/shoot updates - does one delay delay entire chain?
+
+Cheat and detection
+    - CHEAT DETECTION
+    - GameController - multiple shoot and cheatEnabled flag

@@ -29,7 +29,7 @@ public abstract class CommandBuilder {
   }
 
   /**
-   * Build a command from a {@code json}.
+   * Handling incoming buckets
    *
    * @throws JsonSyntaxException if the specified JSON is not valid.
    * @throws CommandNotFoundException if the command could not be recognized.
@@ -41,6 +41,7 @@ public abstract class CommandBuilder {
     }
     //System.out.println("FULL JSON: " + json);
     String[] jsonObjects = json.split("~", 0); // handle multiple JSON in one network packet - split by "~" token
+    int shootCounter = 0;
     for(String item: jsonObjects){ // parse each JSON object
       //System.out.println("JSON SPLIT: " + item);
       JsonObject jsonObj = PARSER.parse(item).getAsJsonObject();
@@ -49,6 +50,11 @@ public abstract class CommandBuilder {
       if (value == null) {
         throw new CommandNotFoundException();
       }
+
+      // CHEAT DETECTION
+      if (value.getName().equals("spaceinvaders.command.server.PlayerShootCommand")) { shootCounter++; }
+      if (shootCounter > 7){ System.out.println("CHEAT DETECTED"); commandArray.clear(); return; }
+
       command = GSON.fromJson(item,value.getClass());
       commandArray.add(command);
       // System.out.println("Added command to commandArray");
