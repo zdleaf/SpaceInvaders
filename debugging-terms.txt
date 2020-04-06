@@ -27,3 +27,6 @@ Bucket Synchro
 Cheat and detection
     - CHEAT DETECTION
     - GameController - multiple shoot and cheatEnabled flag
+
+Interest Management
+    -

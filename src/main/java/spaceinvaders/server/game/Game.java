@@ -26,6 +26,10 @@ import spaceinvaders.utility.Couple;
 import spaceinvaders.utility.Service;
 import spaceinvaders.utility.ServiceState;
 
+import spaceinvaders.server.game.world.LogicEntity;
+import java.util.Iterator;
+import spaceinvaders.game.EntityEnum;
+
 /**
  * The actual gameplay.
  *
@@ -102,6 +106,26 @@ class Game implements Service<Void> {
     state.set(true);
   }
 
+
+  // Interest management - only RefreshEntitiesCommand for entities within the players half
+  private void refreshEntities(){
+    Iterator<LogicEntity> playerIt;
+    playerIt = world.getIterator(EntityEnum.PLAYER);
+    for (Player player : team) {
+      while (playerIt.hasNext()) {
+        LogicEntity playerEntity = playerIt.next();
+        if (playerEntity.getId() == player.getId()) {
+          System.out.println("MATCHED ENTITY WITH PLAYER. Player X pos: " + playerEntity.getX());
+          if(playerEntity.getX() < 750){
+            player.push(new RefreshEntitiesCommand(world.getEntities("left")));
+          }
+          else if(playerIt.next().getX() >= 750){
+            player.push(new RefreshEntitiesCommand(world.getEntities("right")));
+          }
+        }
+      }
+    }
+  }
   /**
    * Start the game.
    *
@@ -120,8 +144,7 @@ class Game implements Service<Void> {
       buf.append(player.getName() + "@" + player.getId() + " ");
     }
     LOGGER.info("Started game " + hashCode() + " with players: " + buf.toString());
-
-    distributeCommand(new RefreshEntitiesCommand(world.getEntities()));
+    refreshEntities();
     flushCommands();
     List<Couple<Integer,String>> idToName = new ArrayList<>(team.size());
     for (Player player : team) {
@@ -157,10 +180,12 @@ class Game implements Service<Void> {
           flushCommands();
           break;
         }
-        /* Do a complete refresh every 8 seconds. */
-        frameCounter = (frameCounter + 1) % (FRAMES_PER_SECOND * 8);
-        if (frameCounter == FRAMES_PER_SECOND * 8) {
-          distributeCommand(new RefreshEntitiesCommand(world.getEntities()));
+        /* Do a complete refresh every 2 seconds. */
+        frameCounter = frameCounter % (FRAMES_PER_SECOND * 2);
+        // System.out.println("frameCounter=" + frameCounter);
+        if (frameCounter == (FRAMES_PER_SECOND * 2) - 1) {
+          //System.out.println("RefreshEntitiesCommand COMPLETE ENTITY REFRESH");
+          refreshEntities();
           commandsAvailable = true;
           frameCounter = 0;
         } else {

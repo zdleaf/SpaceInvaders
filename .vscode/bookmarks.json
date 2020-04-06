@@ -68,8 +68,13 @@
 		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\Game.java",
 		"bookmarks": [
 			{
-				"line": 62,
+				"line": 66,
 				"column": 43,
+				"label": ""
+			},
+			{
+				"line": 109,
+				"column": 2,
 				"label": ""
 			}
 		]
@@ -98,8 +103,8 @@
 				"label": ""
 			},
 			{
-				"line": 218,
-				"column": 57,
+				"line": 217,
+				"column": 4,
 				"label": ""
 			}
 		]
@@ -118,7 +123,7 @@
 				"label": ""
 			},
 			{
-				"line": 184,
+				"line": 185,
 				"column": 97,
 				"label": ""
 			}
@@ -185,6 +190,16 @@
 			{
 				"line": 78,
 				"column": 32,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\src\\main\\java\\spaceinvaders\\server\\game\\world\\World.java",
+		"bookmarks": [
+			{
+				"line": 110,
+				"column": 47,
 				"label": ""
 			}
 		]

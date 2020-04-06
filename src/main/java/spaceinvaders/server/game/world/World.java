@@ -106,4 +106,32 @@ public class World implements WorldPlan {
     }
     return entities;
   } 
+
+  /**
+   * Get all entities in the left or right half
+   *
+   * @return a list of all currently active entities.
+   */
+  public List<Entity> getEntities(String flag) {
+    List<Entity> entities = new ArrayList<>();
+    if(flag.equals("left")){
+      for (List<LogicEntity> value : entityMap.values()) {
+        for (LogicEntity it : value) {
+          if(it.getX() < 750){
+            entities.add(it.getBase());
+          }
+        }
+      }
+    }
+    if(flag.equals("right")){
+      for (List<LogicEntity> value : entityMap.values()) {
+        for (LogicEntity it : value) {
+          if(it.getX() >= 750){
+            entities.add(it.getBase());
+          }
+        }
+      }
+    }
+    return entities;
+  } 
 }

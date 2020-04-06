@@ -158,12 +158,13 @@ public class Connection implements Service<Void> {
       } else { counter++; }
     } else { sender.handle(command); } 
 
-/*  // print the command to the log
+    // print the command to the log
     String cmd = command.getName();
-    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand"){
+    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand" && cmd != "spaceinvaders.command.client.MoveEntityCommand"){
       LOGGER.info("SERVER: " + cmd);
     }
-    // TEST DEAD RECKONING
+    
+/*     // TEST DEAD RECKONING
     if(cmd == "spaceinvaders.command.client.MoveEntityCommand"){
       System.out.println("MoveEntityCommand: " + command.toJson());
     } */
