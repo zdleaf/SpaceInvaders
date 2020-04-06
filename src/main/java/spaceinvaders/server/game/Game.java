@@ -120,7 +120,7 @@ class Game implements Service<Void> {
           if(playerEntity.getX() < config.frame().getWidth()/2){
             player.push(new RefreshEntitiesCommand(world.getEntities("left")));
           }
-          else if(playerIt.next().getX() >= config.frame().getWidth()/2){
+          else if(playerEntity.getX() >= config.frame().getWidth()/2){
             player.push(new RefreshEntitiesCommand(world.getEntities("right")));
           }
         }

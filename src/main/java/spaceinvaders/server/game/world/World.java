@@ -120,7 +120,7 @@ public class World implements WorldPlan {
     if(flag.equals("left")){
       for (List<LogicEntity> value : entityMap.values()) {
         for (LogicEntity it : value) {
-          if(it.getX() < config.frame().getWidth()/2){
+          if(it.getX() < config.frame().getWidth()/2 || it.getType() == EntityEnum.PLAYER){
             entities.add(it.getBase());
           }
         }
@@ -129,7 +129,7 @@ public class World implements WorldPlan {
     if(flag.equals("right")){
       for (List<LogicEntity> value : entityMap.values()) {
         for (LogicEntity it : value) {
-          if(it.getX() >= config.frame().getWidth()/2){
+          if(it.getX() >= config.frame().getWidth()/2|| it.getType() == EntityEnum.PLAYER){
             entities.add(it.getBase());
           }
         }
