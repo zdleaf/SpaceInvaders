@@ -68,11 +68,9 @@ class Game implements Service<Void> {
     // compare the differences between all Players pings, and set delay for each one to be the diff between their ping and the max ping
     for(int i = 0; i < team.size(); i++){
       for(int j = i+1; j < team.size(); j++){
-          System.out.println(i + "," + j);
           Integer temp = 0;
           if(team.get(j).getPing() > team.get(i).getPing()){
               temp = team.get(j).getPing() - team.get(i).getPing();
-              System.out.println(temp);
               if(team.get(i).getDelay() < temp){
                 team.get(i).setDelay(temp);
               }
@@ -80,7 +78,6 @@ class Game implements Service<Void> {
           }
           else if(team.get(i).getPing() > team.get(j).getPing()){
               temp = team.get(i).getPing() - team.get(j).getPing();
-              System.out.println(temp);
               if(team.get(j).getDelay() < temp){
                 team.get(j).setDelay(temp);
               }
@@ -116,7 +113,7 @@ class Game implements Service<Void> {
       while (playerIt.hasNext()) {
         LogicEntity playerEntity = playerIt.next();
         if (playerEntity.getId() == player.getId()) {
-          System.out.println("MATCHED ENTITY WITH PLAYER. Player X pos: " + playerEntity.getX());
+          System.out.println("Player: " + playerEntity.getId() + " X pos: " + playerEntity.getX());
           if(playerEntity.getX() < config.frame().getWidth()/2){
             player.push(new RefreshEntitiesCommand(world.getEntities("left")));
           }
