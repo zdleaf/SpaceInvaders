@@ -107,9 +107,9 @@ class Game implements Service<Void> {
   // Interest management - only RefreshEntitiesCommand for entities within the players half
   final GameConfig config = GameConfig.getInstance();
   private void refreshEntities(){
-    Iterator<LogicEntity> playerIt;
-    playerIt = world.getIterator(EntityEnum.PLAYER);
     for (Player player : team) {
+      Iterator<LogicEntity> playerIt;
+      playerIt = world.getIterator(EntityEnum.PLAYER);
       while (playerIt.hasNext()) {
         LogicEntity playerEntity = playerIt.next();
         if (playerEntity.getId() == player.getId()) {
