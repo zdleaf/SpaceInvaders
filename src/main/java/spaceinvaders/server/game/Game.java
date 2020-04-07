@@ -64,8 +64,8 @@ class Game implements Service<Void> {
     WorldDirector director = new WorldDirector(new ClassicWorldBuilder());
     List<Integer> idList = new ArrayList<>(team.size());
 
-    // set delay for bucket synchronization
-    // compare the differences between all Players pings, and set delay for each one to be the diff between their ping and the max ping
+    // Bucket Synchronization
+    // set delay for each player which is the difference between their ping, and the highest ping of all other players
     for(int i = 0; i < team.size(); i++){
       for(int j = i+1; j < team.size(); j++){
           Integer temp = 0;
@@ -103,8 +103,7 @@ class Game implements Service<Void> {
     state.set(true);
   }
 
-
-  // Interest management - only RefreshEntitiesCommand for entities within the players half
+  // Interest Management - call RefreshEntitiesCommand only for entities within the players half
   final GameConfig config = GameConfig.getInstance();
   private void refreshEntities(){
     for (Player player : team) {
@@ -124,6 +123,7 @@ class Game implements Service<Void> {
       }
     }
   }
+
   /**
    * Start the game.
    *

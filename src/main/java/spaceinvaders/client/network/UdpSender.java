@@ -11,7 +11,6 @@ import spaceinvaders.command.Command;
 import spaceinvaders.utility.Chain;
 import spaceinvaders.server.network.udp.UdpHandler;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.ArrayList; // for commandBucket;
 
 /** Send commands using the UDP protocol. */
@@ -79,7 +78,6 @@ class UdpSender implements Chain<Command> {
     } 
 
     // send the bucket
-    //System.out.print("handleBucket - MULTI: " + data + "\n");
     DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
     sendPacket(packet);
 
