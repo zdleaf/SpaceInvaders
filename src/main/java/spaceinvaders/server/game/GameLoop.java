@@ -105,6 +105,7 @@ public class GameLoop implements Service<Void> {
 
   /** Handle user input that has happened since the last call. */
   public void processInput() throws InterruptedException {
+    Integer amountDelayed = 0;
     Iterator<Player> it = team.iterator();
     Player player;
     while (it.hasNext()) {
@@ -113,13 +114,21 @@ public class GameLoop implements Service<Void> {
         List<Command> commands = player.pull();
         // print the incomingCommandQueue
         // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
+        
+        // Bucket Synchronisation - delay execution of each set of commands for each player
+        // as we are looping through a List<Player>, we need to keep track of how much we have already delayed to avoid slowing other players
+        // the List "team" has already been sorted by ping delay in the GameLoop constructor, so the players with the least or no delay will have their actions executed first
+        // we do not want to delay execution for every command, only for each group of commands, otherwise e.g. if there are 10 commands in the queue and 50ms delay we do not want to delay for 500ms
+        
+        if(!commands.isEmpty()){
+          Integer delay = player.getDelay()-amountDelayed; // delay by the ping difference minus any delay we have already done this function call
+          Thread.sleep(delay); 
+          amountDelayed += player.getDelay(); // increment the delay so we can subtract from the next player in this loop
+          System.out.println("BUCKET SYNCHRO: delaying " + player.getId() + " by " + delay + "ms");
+        }
+
         for (Command command : commands) {
           command.setExecutor(this);
-          // bucket synchro - delay execution of either player movement or shooting commands
-          if(player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.PlayerShootCommand") || player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.MovePlayerLeftCommand") || player.getDelay() > 0 && command.getName().equals("spaceinvaders.command.server.MovePlayerRightCommand")){
-            System.out.println("BUCKET SYNCHRO: delaying execution by " + player.getDelay() + "ms");
-            Thread.sleep(player.getDelay());
-          }
           command.execute();
         }
       } else {
