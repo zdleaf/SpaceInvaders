@@ -6,6 +6,7 @@ import static spaceinvaders.game.EntityEnum.PLAYER;
 import static spaceinvaders.game.EntityEnum.PLAYER_BULLET;
 import static spaceinvaders.game.EntityEnum.SHIELD;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +63,7 @@ public class GameLoop implements Service<Void> {
       throw new NullPointerException();
     }
     this.team = team;
+    Collections.sort(team); // sort out team list in order of ping delay (no delay first, highest delay last)
     this.world = world;
     this.rng = rng;
     this.threadPool = threadPool;

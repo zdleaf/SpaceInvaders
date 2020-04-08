@@ -8,7 +8,7 @@ import spaceinvaders.command.Command;
 import spaceinvaders.server.network.Connection;
 
 /** A player which has established a connection and is ready to join a game. */
-public class Player {
+public class Player implements Comparable<Player> {
   private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 
   private final Connection connection;
@@ -17,6 +17,13 @@ public class Player {
   private Integer teamSize;
   private Integer ping;
   private Integer delay = 0;
+
+  // implements Comparable<Player> to enable us to order/sort Player objects by their delay
+  @Override
+  public int compareTo(Player player) {
+      int compareDelay=((Player)player).getDelay();
+      return this.delay-compareDelay; // ascending order
+  }
 
   /**
    * Wrap a player around the specified connection.

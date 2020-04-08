@@ -28,6 +28,9 @@ Dead Reckoning - default: DEADRECK_DELAY = 300, PLAYER_POS_UPDATE 200
 Bucket Synchro
     - Game.java - before we start the game, we compare every players ping, and set a delay for each Player. this is the difference between that players ping and the person with the highest ping. we can then delay execution of events for each player by this amount.
     - DO WE DELAY ALL QUEUE OF EVENTS OR JUST DELAY THE ONE WE NEED???
+        - Execution of events is done in GameLoop.java, we loop through each player in the list and execute their commands
+        - If we were to delay one players commands with a Thread.Sleep() here, all commands and players after this would be affected by the delay. For example, if the first player had a 50ms delay before each execution
+        - In Player.java we have implemented Comparable to be able to sort our player list by ping delay (overriding the compareTo() function)
     - GameModel.java - BUCKET_DELAY = 
     - Sending bucket:
     - getCommandArray():
