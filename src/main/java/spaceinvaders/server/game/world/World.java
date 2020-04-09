@@ -110,7 +110,7 @@ public class World implements WorldPlan {
   } 
 
   /**
-   * Get all entities in the left or right half
+   * Interest Management - get all entities in the left or right half of the game world
    *
    * @return a list of all currently active entities.
    */

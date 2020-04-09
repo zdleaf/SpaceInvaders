@@ -1,1 +1,43 @@
-diff -ENwbur -x ".git" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
+diff -ENwbur -x ".git" -x "*.html" -x "*.css" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
+
+diff -ENwbur -x ".git" -x "*.html" -x "*.css" -x "*target*" -x ".vscode*" ./ ../Original/SpaceInvaders/ > diff.diff
+
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/GamePanel.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/MoveEntityCommand.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/game/Entity.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/world/World.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java

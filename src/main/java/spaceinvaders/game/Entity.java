@@ -67,7 +67,7 @@ public class Entity implements Cloneable {
     return pos.getSecond();
   }
 
-  public void setPos(int posX, int posY) { // smoothing here includes server side
+  public void setPos(int posX, int posY) {
     pos.setFirst(posX);
     pos.setSecond(posY);
   }

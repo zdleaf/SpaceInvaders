@@ -2,8 +2,7 @@ import java.util.*;
 
 class Ping 
 { 
-    // Your program begins with a call to main(). 
-    // Prints "Hello, World" to the terminal window. 
+    // Test code for determining ping delta between an item in an array and the largest item in the array
     public static void main(String[] args) 
     { 
         List<Integer> ping = Arrays.asList(200, 500, 50, 350);

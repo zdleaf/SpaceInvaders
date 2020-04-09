@@ -1,17 +1,1543 @@
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
-diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./debugging-terms.txt ../Original/SpaceInvaders/debugging-terms.txt
+--- ./debugging-terms.txt	2020-04-09 10:09:22.912600400 +0100
++++ ../Original/SpaceInvaders/debugging-terms.txt	1970-01-01 01:00:00.000000000 +0100
+@@ -1,65 +0,0 @@
+-SERVER Connection.Java
+-CLIENT
+-FULL JSON
+-JSON SPLIT
+-getCommandArray()
+-
+-For a diff file containing all amendments and changes to the code, see diff.diff file in root directory or clone the original repo and run the following command:
+-diff -ENwbur -x ".git" -x "*.html" -x "*.css" ./ ../Original/SpaceInvaders/ > diff.diff
+-
+-Artificial Network delay
+-    - In ClientConfig.java, each player is assigned a random ping with ThreadLocalRandom from a given range
+-    - In client/network/UdpSender.java:sendPacket() we Thread.sleep() by this ping value before sending each packet, simulating network latency
+-    - This ping integer is sent to the server along with the other Player information (e.g. username etc) via the SetPlayerIdCommand as the server requires it for bucket synchronisation
+-    - The server stores the ping with the player in their instance of Player.java
+-
+-Bucket Synchro
+-    - Game.java - before we start the game, we compare every players ping, and set a delay for each Player. this is the difference between that players ping and the person with the highest ping. we can then delay execution of events for each player by this amount.
+-        - Execution of events is done in GameLoop.java, we loop through each player in the list and execute their commands
+-        - If we were to delay one players commands with a Thread.Sleep(delay) here, all commands and players after this would also be affected by the delay. For example, if the first player when we loop through the players list had a 50ms delay before execution, the next player to have their commands executed would also have had to wait 50ms
+-        - To resolve this, in Player.java we have implemented Comparable to be able to sort our player list by ping delay (overriding the compareTo() function)
+-        - We sort the player list by ping delay (lowest or no delay first), and execute these commands first, and delaying by the appropriate amount
+-        - We then keep track of how much we've already delayed, so for each successive player we can deduct the delay that has already occurred
+-
+-    - There is also an implementation of "buckets" similar to Nagles algorithm. The standard code sent an individual UDP packet for each command, rather than grouping multiple commands into one packet to save network traffic.
+-        - In client/network/UdpSender.java there is handleBucket() which is a recursive function that takes an array of commands and splits it into a single combined JSON packet to be sent over the network. if the JSON output is larger than MAX_PACKET_SIZE, we recursively call the same function on the tail of the command list after sending the first bucket.
+-            - We delimit JSON commands in the packet using the "~" token
+-        - In client/mvc/GameModel.java we add commands to the bucket and there is a scheduled exector that sends the command buckets every 250 ms (BUCKET_DELAY var). This limits the rate that clients can send updates to the server, so faster latency players have less of an advantage (and latency is also adjusted for as above).
+-        - There is corresponding SERVER code to handle multiple commands in one packet in command/CommandBuilder.java, saving incoming commands into an array to be later called and executed from Connection.java
+-        - To improve on this approach we could handle incoming buckets on the server side in rounds, however this has not currently been implemented.
+-
+-    - GameModel.java - BUCKET_DELAY = 
+-    - CommandBuilder.java - buildCommand()
+-    - Connection.java - getCommandArray():
+-
+-Smooth Corrections
+-    - In client/gui/entities/GraphicalEntity.java we have amended relocate() to move to the new position from the old position in 1 pixel intervals, with a 10ms Thread.sleep() inbetween to further smooth out the movement
+-    - TEST SMOOTH CORRECTIONS
+-        - Connection.java - TEST_SMOOTH_CORRECTIONS = true
+-        - GameLoop.java - Set PLAYER_POS_UPDATE to 10000 to delay player updates from server
+-        - GamePanel.java - Set DEADRECK_ENABLED to false
+-
+-Dead Reckoning 
+-    - default settings: DEADRECK_DELAY = 300 ms, PLAYER_POS_UPDATE 200 ms
+-    - SERVER SIDE: In GameLoop.java we have made a new AutoSwitch called playerPosUpdate that is called from entitiesMove(), this sends an update of player position to the client every 200 ms via a MoveEntityCommand.
+-    - CLIENT SIDE: in GamePanel.java we have an executor that executes deadReckon() every 300 ms. This gets the previous direction and position (saved in the hashmap's prevEntityDirection amd prevEntityPosition when relocateEntity() is called) and moves the player in that direction.
+-
+-    - to test and see how ships automatically move in absence of server update
+-        - GameLoop.java - set PLAYER_POS_UPDATE in GameLoop to 5000 or higher
+-        - GamePanel.java - set DEADRECK_DEBUG to true to enable debugging messages
+-
+-Cheat and detection
+-    - In client/mvc/GameController.java we check if the player name == CHEAT_NAME, and if so set the cheatEnabled flag for the player
+-    - In the same file, if cheats are enabled, every time the player shoots, 11 bullets entities are created on top of each other. This enables the player bullet to go through multiple invaders/invader bullets.
+-    - Cheat detection is handled in command/CommandBuilder.java - we detect if there are more than 7 PlayerShootCommand's in the commandArray. If this is detected, we display and message and do not execute any of the commands in this commandArray.
+-
+-Interest Management
+-    - Game.java
+-        - RefreshEntitiesCommand() is a command that updates/pushes every single entity from the game server to the client
+-        - after the initial push, the comments in code suggests this was meant to be called every 8 seconds, but due to a bug in the game counter logic, the condition to execute it never was met
+-        - this was fixed to send a RefreshEntitiesCommand() to each player every 2 seconds
+-        - see refreshEntities() command - the entities that get updated/pushed to the player depends on the X position of the player, i.e. if player is in left half of screen, only push entities that are in the left half and vice versa. this is done with a call to getEntities() in World.java.
+-        
+-    - World.java
+-        - added getEntities(string flag) which will only add entities either on left or right based on the flag arguments passed ("left"/"right")
+-        - the only exception is PLAYER ships which we always want to display
+\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./diff-cmds.txt ../Original/SpaceInvaders/diff-cmds.txt
+--- ./diff-cmds.txt	2020-04-09 09:53:05.158382000 +0100
++++ ../Original/SpaceInvaders/diff-cmds.txt	1970-01-01 01:00:00.000000000 +0100
+@@ -1,45 +0,0 @@
+-diff -ENwbur -x ".git" -x "*.html" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
+-
+-
+-
+-
+-
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/GamePanel.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/MoveEntityCommand.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/game/Entity.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/world/World.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+-diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./diff.diff ../Original/SpaceInvaders/diff.diff
+--- ./diff.diff	2020-04-09 10:23:48.679826300 +0100
++++ ../Original/SpaceInvaders/diff.diff	1970-01-01 01:00:00.000000000 +0100
+@@ -1,120 +0,0 @@
+-diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./debugging-terms.txt ../Original/SpaceInvaders/debugging-terms.txt
+---- ./debugging-terms.txt	2020-04-09 10:09:22.912600400 +0100
+-+++ ../Original/SpaceInvaders/debugging-terms.txt	1970-01-01 01:00:00.000000000 +0100
+-@@ -1,65 +0,0 @@
+--SERVER Connection.Java
+--CLIENT
+--FULL JSON
+--JSON SPLIT
+--getCommandArray()
+--
+--For a diff file containing all amendments and changes to the code, see diff.diff file in root directory or clone the original repo and run the following command:
+--diff -ENwbur -x ".git" -x "*.html" -x "*.css" ./ ../Original/SpaceInvaders/ > diff.diff
+--
+--Artificial Network delay
+--    - In ClientConfig.java, each player is assigned a random ping with ThreadLocalRandom from a given range
+--    - In client/network/UdpSender.java:sendPacket() we Thread.sleep() by this ping value before sending each packet, simulating network latency
+--    - This ping integer is sent to the server along with the other Player information (e.g. username etc) via the SetPlayerIdCommand as the server requires it for bucket synchronisation
+--    - The server stores the ping with the player in their instance of Player.java
+--
+--Bucket Synchro
+--    - Game.java - before we start the game, we compare every players ping, and set a delay for each Player. this is the difference between that players ping and the person with the highest ping. we can then delay execution of events for each player by this amount.
+--        - Execution of events is done in GameLoop.java, we loop through each player in the list and execute their commands
+--        - If we were to delay one players commands with a Thread.Sleep(delay) here, all commands and players after this would also be affected by the delay. For example, if the first player when we loop through the players list had a 50ms delay before execution, the next player to have their commands executed would also have had to wait 50ms
+--        - To resolve this, in Player.java we have implemented Comparable to be able to sort our player list by ping delay (overriding the compareTo() function)
+--        - We sort the player list by ping delay (lowest or no delay first), and execute these commands first, and delaying by the appropriate amount
+--        - We then keep track of how much we've already delayed, so for each successive player we can deduct the delay that has already occurred
+--
+--    - There is also an implementation of "buckets" similar to Nagles algorithm. The standard code sent an individual UDP packet for each command, rather than grouping multiple commands into one packet to save network traffic.
+--        - In client/network/UdpSender.java there is handleBucket() which is a recursive function that takes an array of commands and splits it into a single combined JSON packet to be sent over the network. if the JSON output is larger than MAX_PACKET_SIZE, we recursively call the same function on the tail of the command list after sending the first bucket.
+--            - We delimit JSON commands in the packet using the "~" token
+--        - In client/mvc/GameModel.java we add commands to the bucket and there is a scheduled exector that sends the command buckets every 250 ms (BUCKET_DELAY var). This limits the rate that clients can send updates to the server, so faster latency players have less of an advantage (and latency is also adjusted for as above).
+--        - There is corresponding SERVER code to handle multiple commands in one packet in command/CommandBuilder.java, saving incoming commands into an array to be later called and executed from Connection.java
+--        - To improve on this approach we could handle incoming buckets on the server side in rounds, however this has not currently been implemented.
+--
+--    - GameModel.java - BUCKET_DELAY = 
+--    - CommandBuilder.java - buildCommand()
+--    - Connection.java - getCommandArray():
+--
+--Smooth Corrections
+--    - In client/gui/entities/GraphicalEntity.java we have amended relocate() to move to the new position from the old position in 1 pixel intervals, with a 10ms Thread.sleep() inbetween to further smooth out the movement
+--    - TEST SMOOTH CORRECTIONS
+--        - Connection.java - TEST_SMOOTH_CORRECTIONS = true
+--        - GameLoop.java - Set PLAYER_POS_UPDATE to 10000 to delay player updates from server
+--        - GamePanel.java - Set DEADRECK_ENABLED to false
+--
+--Dead Reckoning 
+--    - default settings: DEADRECK_DELAY = 300 ms, PLAYER_POS_UPDATE 200 ms
+--    - SERVER SIDE: In GameLoop.java we have made a new AutoSwitch called playerPosUpdate that is called from entitiesMove(), this sends an update of player position to the client every 200 ms via a MoveEntityCommand.
+--    - CLIENT SIDE: in GamePanel.java we have an executor that executes deadReckon() every 300 ms. This gets the previous direction and position (saved in the hashmap's prevEntityDirection amd prevEntityPosition when relocateEntity() is called) and moves the player in that direction.
+--
+--    - to test and see how ships automatically move in absence of server update
+--        - GameLoop.java - set PLAYER_POS_UPDATE in GameLoop to 5000 or higher
+--        - GamePanel.java - set DEADRECK_DEBUG to true to enable debugging messages
+--
+--Cheat and detection
+--    - In client/mvc/GameController.java we check if the player name == CHEAT_NAME, and if so set the cheatEnabled flag for the player
+--    - In the same file, if cheats are enabled, every time the player shoots, 11 bullets entities are created on top of each other. This enables the player bullet to go through multiple invaders/invader bullets.
+--    - Cheat detection is handled in command/CommandBuilder.java - we detect if there are more than 7 PlayerShootCommand's in the commandArray. If this is detected, we display and message and do not execute any of the commands in this commandArray.
+--
+--Interest Management
+--    - Game.java
+--        - RefreshEntitiesCommand() is a command that updates/pushes every single entity from the game server to the client
+--        - after the initial push, the comments in code suggests this was meant to be called every 8 seconds, but due to a bug in the game counter logic, the condition to execute it never was met
+--        - this was fixed to send a RefreshEntitiesCommand() to each player every 2 seconds
+--        - see refreshEntities() command - the entities that get updated/pushed to the player depends on the X position of the player, i.e. if player is in left half of screen, only push entities that are in the left half and vice versa. this is done with a call to getEntities() in World.java.
+--        
+--    - World.java
+--        - added getEntities(string flag) which will only add entities either on left or right based on the flag arguments passed ("left"/"right")
+--        - the only exception is PLAYER ships which we always want to display
+-\ No newline at end of file
+-diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./diff-cmds.txt ../Original/SpaceInvaders/diff-cmds.txt
+---- ./diff-cmds.txt	2020-04-09 09:53:05.158382000 +0100
+-+++ ../Original/SpaceInvaders/diff-cmds.txt	1970-01-01 01:00:00.000000000 +0100
+-@@ -1,45 +0,0 @@
+--diff -ENwbur -x ".git" -x "*.html" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
+--
+--
+--
+--
+--
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/gui/GamePanel.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameModel.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/NetworkConnection.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/network/UdpSender.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/MoveEntityCommand.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandBuilder.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/CommandDirector.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/game/Entity.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/Game.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/GameLoop.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/game/world/World.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/Connection.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/server/player/Player.java
+--diff -ENwbur -x .git ./src/main/java/spaceinvaders/utility/Chain.java
+-\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./doc/package-list ../Original/SpaceInvaders/doc/package-list
+--- ./doc/package-list	1970-01-01 01:00:00.000000000 +0100
++++ ../Original/SpaceInvaders/doc/package-list	2020-03-22 12:35:14.056813200 +0000
+@@ -0,0 +1,21 @@
++spaceinvaders
++spaceinvaders.client
++spaceinvaders.client.gui
++spaceinvaders.client.gui.entities
++spaceinvaders.client.mvc
++spaceinvaders.client.network
++spaceinvaders.command
++spaceinvaders.command.client
++spaceinvaders.command.server
++spaceinvaders.exceptions
++spaceinvaders.game
++spaceinvaders.server
++spaceinvaders.server.controller
++spaceinvaders.server.game
++spaceinvaders.server.game.world
++spaceinvaders.server.network
++spaceinvaders.server.network.senderchain
++spaceinvaders.server.network.tcp
++spaceinvaders.server.network.udp
++spaceinvaders.server.player
++spaceinvaders.utility
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./doc/script.js ../Original/SpaceInvaders/doc/script.js
+--- ./doc/script.js	1970-01-01 01:00:00.000000000 +0100
++++ ../Original/SpaceInvaders/doc/script.js	2020-03-22 12:35:14.056813200 +0000
+@@ -0,0 +1,30 @@
++function show(type)
++{
++    count = 0;
++    for (var key in methods) {
++        var row = document.getElementById(key);
++        if ((methods[key] &  type) != 0) {
++            row.style.display = '';
++            row.className = (count++ % 2) ? rowColor : altColor;
++        }
++        else
++            row.style.display = 'none';
++    }
++    updateTabs(type);
++}
++
++function updateTabs(type)
++{
++    for (var value in tabs) {
++        var sNode = document.getElementById(tabs[value][0]);
++        var spanNode = sNode.firstChild;
++        if (value == type) {
++            sNode.className = activeTableTab;
++            spanNode.innerHTML = tabs[value][1];
++        }
++        else {
++            sNode.className = tableTab;
++            spanNode.innerHTML = "<a href=\"javascript:show("+ value + ");\">" + tabs[value][1] + "</a>";
++        }
++    }
++}
+Binary files ./Ping.class and ../Original/SpaceInvaders/Ping.class differ
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./run-cmds.txt ../Original/SpaceInvaders/run-cmds.txt
+--- ./run-cmds.txt	2020-03-25 14:35:17.424703600 +0000
++++ ../Original/SpaceInvaders/run-cmds.txt	1970-01-01 01:00:00.000000000 +0100
+@@ -1,11 +0,0 @@
+-java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar server 5412 verbose
+-java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar client verbose
+-
+-
+-mvn package; c; java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar server 5412 verbose
+-c; java -jar ./target/space-invaders-1.0.0-jar-with-dependencies.jar client verbose
+-
+-
+-in main/src/java
+-mkdir target
+-javac -d target -classpath "C:\Users\Zach\Dropbox\QMUL\DistributedSystems\Project\SpaceInvaders\lib\gson-2.8.0.jar" -sourcepath . spaceinvaders/SpaceInvaders.java
+\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./SI-ws.code-workspace ../Original/SpaceInvaders/SI-ws.code-workspace
+--- ./SI-ws.code-workspace	2020-03-22 13:13:14.046510100 +0000
++++ ../Original/SpaceInvaders/SI-ws.code-workspace	1970-01-01 01:00:00.000000000 +0100
+@@ -1,7 +0,0 @@
+-{
+-	"folders": [
+-		{
+-			"path": "."
+-		}
+-	]
+-}
+\ No newline at end of file
+Binary files ./space-invaders-1.0.0-jar-with-dependencies.jar and ../Original/SpaceInvaders/space-invaders-1.0.0-jar-with-dependencies.jar differ
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/ClientConfig.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/ClientConfig.java
+--- ./src/main/java/spaceinvaders/client/ClientConfig.java	2020-03-29 14:24:09.821729600 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/ClientConfig.java	2020-03-22 12:35:14.253748400 +0000
+@@ -10,8 +10,6 @@
+ import spaceinvaders.exceptions.InvalidServerAddressException;
+ import spaceinvaders.exceptions.InvalidUserNameException;
+ 
+-import java.util.concurrent.ThreadLocalRandom;
+-
+ /** Used to hold the configuration of the client. */
+ public class ClientConfig {
+   private static final transient Logger LOGGER = Logger.getLogger(ClientConfig.class.getName());
+@@ -25,7 +23,6 @@
+   private Integer serverPort;
+   private String userName;
+   private Integer udpIncomingPort;
+-  private Integer ping = ThreadLocalRandom.current().nextInt(5, 100);
+ 
+   private ClientConfig() {}
+ 
+@@ -59,10 +56,6 @@
+     return maxPlayersPerTeam;
+   }
+ 
+-  public Integer getPing() {
+-    return ping;
+-  }
+-
+   /** Check if the server address is valid. */
+   public boolean isAddrValid() {
+     final Pattern validIpAddressRegex = Pattern.compile(
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java
+--- ./src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java	2020-04-05 12:08:03.410121500 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/gui/entities/GraphicalEntity.java	2020-03-22 12:35:14.256747400 +0000
+@@ -69,19 +69,8 @@
+    * @param newX new coordinate on x-axis.
+    * @param newY new coordinate on y-axis.
+    */
+-  public void relocate(int newX, int newY) { // smooth corrections here
+-    int oldX = body.getX();
+-    int xDiff = newX - oldX;
+-
+-    //System.out.println("Moving X from: " + oldX + " to " + newX + " - diff: " + xDiff);
+-    int i = oldX;
+-    while(i != newX){
+-      // System.out.println("i = " + i);
+-      body.setPos(i,newY); 
+-      try{ Thread.sleep(10); } catch (InterruptedException e){ break; }
+-      if(xDiff < 0){i--;}
+-      if(xDiff > 0){i++;}
+-    }
++  public void relocate(int newX, int newY) {
++    body.setPos(newX,newY);
+   }
+ 
+   /**
+@@ -114,7 +103,7 @@
+   /**
+    * @throws NullPointerException if the entity does not have a body.
+    */
+-  public int getX() {
++  protected int getX() {
+     if (body == null) {
+       throw new NullPointerException();
+     }
+@@ -124,7 +113,7 @@
+   /**
+    * @throws NullPointerException - if the entity does not have a body.
+    */
+-  public int getY() {
++  protected int getY() {
+     if (body == null) {
+       throw new NullPointerException();
+     }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/gui/GamePanel.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/gui/GamePanel.java
+--- ./src/main/java/spaceinvaders/client/gui/GamePanel.java	2020-04-05 12:22:53.962876100 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/gui/GamePanel.java	2020-03-22 12:35:14.255747800 +0000
+@@ -22,17 +22,11 @@
+ import spaceinvaders.client.gui.entities.GraphicsFactory;
+ import spaceinvaders.client.gui.entities.PaintingVisitor;
+ import spaceinvaders.client.gui.entities.Player;
+-import spaceinvaders.command.server.MovePlayerRightCommand;
+ import spaceinvaders.game.Entity;
+ import spaceinvaders.game.EntityEnum;
+ import spaceinvaders.game.GameConfig;
+ import spaceinvaders.utility.Couple;
+ 
+-import java.util.HashMap;
+-import java.util.concurrent.Executors;
+-import java.util.concurrent.ScheduledExecutorService;
+-import java.util.concurrent.TimeUnit;
+-
+ /**
+  * Main panel of the game.
+  *
+@@ -50,41 +44,6 @@
+   private Couple<Integer,Integer> centerImgPos;
+   private Boolean gameOn;
+ 
+-  // Dead Reckoning - to test set PLAYER_POS_UPDATE in GameLoop to 5000 and DEADRECK_DELAY below to 500
+-  private final Boolean DEADRECK_ENABLED = true;
+-  private final Boolean DEADRECK_DEBUG = false;
+-  private HashMap<Integer, Integer> prevEntityDirection = new HashMap<Integer, Integer>(); // store the previous direction to calculate dead reck
+-  private HashMap<Integer, Integer> prevEntityPosition = new HashMap<Integer, Integer>(); // store the previous position (key=entityID, value=x coord)
+-  // schedule the position of each player to be updated every X ms
+-  private final int DEADRECK_DELAY = 300; // milliseconds
+-  ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+-
+-  Runnable deadReckon = new Runnable() {
+-    public void run() {
+-        if(!prevEntityDirection.isEmpty()){
+-          for(Map.Entry<Integer, Integer> entry : prevEntityDirection.entrySet()){
+-            //System.out.println(prevEntityDirection);
+-            Integer id = entry.getKey(); 
+-            Integer direction = entry.getValue();
+-            final GraphicalEntity entity = entityMap.get(id);
+-            if (entity == null) {
+-              throw new NullPointerException();
+-            }
+-            if(direction == 0) { // not moved
+-              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] No movement detected"); }
+-            } 
+-            else if(direction == 1){ // previous move was right
+-              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] Moving right"); }
+-              entity.relocate(entity.getX()+config.speed().player().getDistance(), entity.getY()); // increase x by player move speed
+-            } else if (direction == 2){ // previous move was left
+-              if(DEADRECK_DEBUG == true) { System.out.println("Dead reckoning[" + id + "] Moving left"); }
+-              entity.relocate(entity.getX()-config.speed().player().getDistance(), entity.getY());
+-            }
+-          }
+-        }
+-    }
+-  };
+-  
+   public GamePanel() {
+     setBackground(Color.BLACK);
+   setForeground(Color.BLACK);
+@@ -149,10 +108,6 @@
+    * @throws NullPointerException if argument is {@code null}.
+    */
+   public void refreshEntities(List<Entity> updates) {
+-
+-    // move player based on their previous movement direction
+-    if(DEADRECK_ENABLED) { executor.scheduleAtFixedRate(deadReckon, 0, DEADRECK_DELAY, TimeUnit.MILLISECONDS); } 
+-
+     if (updates == null) {
+       throw new NullPointerException();
+     }
+@@ -223,20 +178,12 @@
+    *
+    * @throws NullPointerException if {@code id} could not be found.
+    */
+-  public void relocateEntity(int id, int newX, int newY) { // client side dead reckoning here
++  public void relocateEntity(int id, int newX, int newY) {
+     final GraphicalEntity entity = entityMap.get(id);
+     if (entity == null) {
+       throw new NullPointerException();
+     }
+-    if(prevEntityPosition.containsKey(id)){ 
+-      Integer direction;
+-      if(prevEntityPosition.get(id) - newX < -1){ direction = 1; } // 0 = player not moving, 1 = moving right, 2 = moving left
+-      else if (prevEntityPosition.get(id) - newX > 1 ){ direction = 2; }
+-      else { direction = 0; } 
+-      prevEntityDirection.put(id, direction); // store the last direction of the the entity
+-    }
+     entity.relocate(newX,newY);
+-    prevEntityPosition.put(id, newX); // store the last position
+   }
+ 
+   /**
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/mvc/GameController.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/mvc/GameController.java
+--- ./src/main/java/spaceinvaders/client/mvc/GameController.java	2020-04-06 14:59:24.829397700 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/mvc/GameController.java	2020-03-22 12:35:14.259746600 +0000
+@@ -43,9 +43,6 @@
+   private final ExecutorService modelStateChecker = Executors.newSingleThreadExecutor();
+   private Boolean shuttingDown = false;
+ 
+-  private static Boolean cheatEnabled = false; // disabled by default
+-  private final String CHEAT_NAME = "zach"; // enable cheats if clients name matches this
+-
+   /**
+    * Couple the controller with a {@link spaceinvaders.client.mvc.Model}.
+    */
+@@ -115,8 +112,6 @@
+       ClientConfig config = ClientConfig.getInstance();
+       try {
+         config.verify();
+-        System.out.println("CLIENT ping: " + config.getPing()); // print ping and ID for each player
+-        if(config.getUserName().equals(CHEAT_NAME)){ cheatEnabled = true; System.out.println("Cheats enabled"); } // enable cheats if username matches
+       } catch (InvalidServerAddressException | IllegalPortNumberException
+           | InvalidUserNameException exception) {
+         displayErrorOnViews(exception);
+@@ -262,11 +257,6 @@
+       if (event.getKeyCode() == VK_SPACE) {
+         if (model.getGameState()) {
+           model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+-          if(cheatEnabled){ // cheat: shoot 10 extra bullets at once if cheat is enabled
+-            for(int i = 0; i < 10; i++){
+-              model.doCommand(new PlayerShootCommand(ClientConfig.getInstance().getId()));
+-            }
+-          }
+         }
+       } else {
+         if (nextChain != null) {
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/mvc/GameModel.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/mvc/GameModel.java
+--- ./src/main/java/spaceinvaders/client/mvc/GameModel.java	2020-04-06 13:50:25.016898000 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/mvc/GameModel.java	2020-03-22 12:35:14.260746800 +0000
+@@ -21,12 +21,6 @@
+ import spaceinvaders.utility.Service;
+ import spaceinvaders.utility.ServiceState;
+ 
+-import java.lang.System; // for currentTimeMillis()
+-import java.util.ArrayList; // for commandBucket;
+-
+-import java.util.concurrent.ScheduledExecutorService;
+-import java.util.concurrent.TimeUnit;
+-
+ /**
+  * Provides the game data.
+  *
+@@ -44,22 +38,6 @@
+   private final ServiceState gameState = new ServiceState();
+   private NetworkConnection connection;
+ 
+-  private static ArrayList<Command> commandBucket = new ArrayList<Command>();
+-
+-  // schedule the bucket to be sent every X ms with ScheduledExecutorService.scheduleAtFixedRate - see also sendBucket()
+-  private static final int BUCKET_DELAY = 250;
+-  ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+-  
+-  Runnable sendBucket = new Runnable() {
+-    public void run() {
+-        if(!commandBucket.isEmpty()){
+-          System.out.println("Sending bucket: " + commandBucket);
+-          connection.send(commandBucket);
+-          commandBucket.clear();
+-        }
+-    }
+-  };
+-
+   public GameModel() {
+     dispatcherExecutor.submit(dispatcher);
+   }
+@@ -74,11 +52,8 @@
+    * @throws RejectedExecutionException if a task cannot be scheduled for execution.
+    */
+   @Override
+-  public Void call() throws SocketOpeningException, ExecutionException, InterruptedException {
+-
+-    // send our command buckets every BUCKET_DELAY ms
+-    executor.scheduleAtFixedRate(sendBucket, 0, BUCKET_DELAY, TimeUnit.MILLISECONDS);
+-
++  public Void call() throws SocketOpeningException, ExecutionException,
++         InterruptedException {
+     // This will open up a network connection, and might throw exceptions.
+     connection = new NetworkConnection(incomingQueue);
+     Future<?> connectionFuture = connectionExecutor.submit(connection);
+@@ -119,7 +94,7 @@
+   }
+ 
+   /**
+-   * Add a command to the commandBucket to be sent every BUCKET_DELAY ms - see sendBucket()
++   * Send a command to the server.
+    *
+    * @throws NullPointerException if there is no connection.
+    */
+@@ -128,11 +103,7 @@
+     if (connection == null) {
+       throw new NullPointerException();
+     }
+-    if (command.getName() == "spaceinvaders.command.server.ConfigurePlayerCommand"){ // do not bucket the initial ConfigurePlayerCommand - we must respond within 1s or connection is closed
+       connection.send(command);
+-    } else {
+-      commandBucket.add(command);
+-    }
+   }
+ 
+   @Override
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/network/NetworkConnection.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/network/NetworkConnection.java
+--- ./src/main/java/spaceinvaders/client/network/NetworkConnection.java	2020-03-25 10:51:21.831421700 +0000
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/network/NetworkConnection.java	2020-03-22 12:35:14.261746400 +0000
+@@ -41,7 +41,6 @@
+   private final ExecutorService tcpReceiverExecutor;
+   private final ExecutorService udpReceiverExecutor;
+   private final ServiceState state = new ServiceState();
+-  private final Integer ping;
+ 
+   /**
+    * Configure a new network connection.
+@@ -55,7 +54,6 @@
+    */
+   public NetworkConnection(TransferQueue<String> incomingQueue) throws SocketOpeningException {
+     ClientConfig config = ClientConfig.getInstance();
+-    ping = config.getPing();
+     if (incomingQueue == null) {
+       throw new NullPointerException();
+     }
+@@ -85,7 +83,7 @@
+     try {
+       tcpSender = new TcpSender(tcpSocket);
+       tcpReceiver = new TcpReceiver(tcpSocket,incomingQueue);
+-      udpSender = new UdpSender(outgoingUdpSocket, ping);
++      udpSender = new UdpSender(outgoingUdpSocket);
+       udpReceiver = new UdpReceiver(incomingUdpSocket,incomingQueue);
+     } catch (IOException exception) {
+       throw new SocketOpeningException(exception);
+@@ -160,13 +158,4 @@
+   public void send(Command command) {
+     sender.handle(command);
+   }
+-
+-  /**
+-   * Send a command bucket to the server.
+-   *
+-   * @throws NullPointerException if an argument is {@code null}.
+-   */
+-  public void send(ArrayList<Command> commandBucket) {
+-    sender.handleBucket(commandBucket);
+-  }
+ }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/client/network/UdpSender.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/network/UdpSender.java
+--- ./src/main/java/spaceinvaders/client/network/UdpSender.java	2020-04-08 00:33:00.291853000 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/client/network/UdpSender.java	2020-03-22 12:35:14.262745700 +0000
+@@ -9,9 +9,6 @@
+ import java.util.logging.Logger;
+ import spaceinvaders.command.Command;
+ import spaceinvaders.utility.Chain;
+-import spaceinvaders.server.network.udp.UdpHandler;
+-
+-import java.util.ArrayList; // for commandBucket;
+ 
+ /** Send commands using the UDP protocol. */
+ class UdpSender implements Chain<Command> {
+@@ -19,19 +16,17 @@
+ 
+   private final DatagramSocket socket;
+   private Chain<Command> nextChain;
+-  private final Integer ping;
+ 
+   /**
+    * Construct a sender that will communicate through the open {@code socket}.
+    *
+    * @throws NullPointerException if the specified socket is {@code null}.
+    */
+-  public UdpSender(DatagramSocket socket, Integer ping) throws IOException {
++  public UdpSender(DatagramSocket socket) throws IOException {
+     if (socket == null) {
+       throw new NullPointerException();
+     }
+     this.socket = socket;
+-    this.ping = ping;
+   }
+ 
+   /**
+@@ -44,10 +39,13 @@
+     }
+     if (command.getProtocol().equals(UDP)) {
+       String data = command.toJson();
+-      data += "~" + data;
+-      LOGGER.info("JSON " + data);
+       DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+-      sendPacket(packet);
++      try {
++        socket.send(packet);
++      } catch (Exception exception) {
++        // Do not stop the game in case one packet fails.
++        LOGGER.log(SEVERE,exception.toString(),exception);
++      }
+     } else {
+       if (nextChain == null) {
+         // This should never happen.
+@@ -57,46 +55,6 @@
+     }
+   }
+   
+-/*   
+-    handleBucket() 
+-    - recursively splits the commandBucket into packets smaller than MAX_INCOMING_PACKET_SIZE (See UDPHandler) and sends the packets
+-*/
+-  @Override
+-  public void handleBucket(ArrayList<Command> commandBucket){
+-    if(commandBucket.size() == 0){ return; } // base case for recursion
+-    String data = "";
+-    int idx;
+-    for(idx = 0; idx < commandBucket.size(); idx++){
+-      if (commandBucket.get(idx) == null) {
+-        throw new NullPointerException();
+-      }
+-      if (commandBucket.get(idx).getProtocol().equals(UDP)) {
+-        if(data.length() + commandBucket.get(idx).toJson().length() < UdpHandler.getPacketSize()){
+-          data += commandBucket.get(idx).toJson() + "~";
+-        } else { break; }
+-      }
+-    } 
+-
+-    // send the bucket
+-    DatagramPacket packet = new DatagramPacket(data.getBytes(),data.length());
+-    sendPacket(packet);
+-
+-    // recursively call handleBucket on the tail
+-    ArrayList<Command> overflow = new ArrayList<Command>(commandBucket.subList(idx, commandBucket.size()));
+-    handleBucket(overflow);
+-  }
+-
+-  @Override
+-  public void sendPacket(DatagramPacket packet){
+-    try {
+-      Thread.sleep(ping); // delay artifically by ping (ms)
+-      socket.send(packet);
+-    } catch (Exception exception) {
+-      // Do not stop the game in case one packet fails.
+-      LOGGER.log(SEVERE,exception.toString(),exception);
+-    }
+-  }
+-
+   @Override
+   public void setNext(Chain<Command> nextChain) {
+     this.nextChain = nextChain;
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/command/client/MoveEntityCommand.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/client/MoveEntityCommand.java
+--- ./src/main/java/spaceinvaders/command/client/MoveEntityCommand.java	2020-03-31 13:18:10.040484900 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/client/MoveEntityCommand.java	2020-03-22 12:35:14.267743700 +0000
+@@ -32,7 +32,6 @@
+   @Override
+   public void execute() {
+     for (View view : executor.getViews()) {
+-      // System.out.print("CLIENT: MoveEntity: " + entityId + "\n");
+       view.moveEntity(entityId,newX,newY);
+     }
+   }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java
+--- ./src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java	2020-04-09 10:06:52.732922400 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/client/SetPlayerIdCommand.java	2020-03-22 12:35:14.268743800 +0000
+@@ -30,10 +30,9 @@
+   public void execute() {
+     ClientConfig config = ClientConfig.getInstance();
+     config.setId(id);
+-    System.out.println("SetPlayerIdCommand: CLIENT ID: " + id); // print client ID
+     Model model = executor.getModel();
+     model.doCommand(new ConfigurePlayerCommand(config.getUserName(),config.getTeamSize(),
+-          config.getUdpIncomingPort(), config.getPing()));
++          config.getUdpIncomingPort()));
+     for (View view : executor.getViews()) {
+       view.showGame();
+     }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/command/CommandBuilder.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/CommandBuilder.java
+--- ./src/main/java/spaceinvaders/command/CommandBuilder.java	2020-04-06 15:13:08.531905000 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/CommandBuilder.java	2020-03-22 12:35:14.263745400 +0000
+@@ -9,7 +9,6 @@
+ import java.util.Map;
+ import spaceinvaders.command.Command;
+ import spaceinvaders.exceptions.CommandNotFoundException;
+-import java.util.ArrayList;
+ 
+ /** Builds commands. */
+ public abstract class CommandBuilder {
+@@ -17,7 +16,6 @@
+   private static final JsonParser PARSER = new JsonParser();
+   private Map<String,Command> commandMap;
+   private Command command;
+-  private ArrayList<Command> commandArray = new ArrayList<Command>(); // Create an ArrayList object
+ 
+   /** Create a builder capable of building the specified commands. */
+   public CommandBuilder(Command ... commands) {
+@@ -29,7 +27,7 @@
+   }
+ 
+   /**
+-   * Handling incoming buckets
++   * Build a command from a {@code json}.
+    *
+    * @throws JsonSyntaxException if the specified JSON is not valid.
+    * @throws CommandNotFoundException if the command could not be recognized.
+@@ -39,40 +37,17 @@
+     if (json == null) {
+       throw new NullPointerException();
+     }
+-    //System.out.println("FULL JSON: " + json);
+-    String[] jsonObjects = json.split("~", 0); // handle multiple JSON in one network packet - split by "~" token
+-    int shootCounter = 0;
+-    for(String item: jsonObjects){ // parse each JSON object
+-      //System.out.println("JSON SPLIT: " + item);
+-      JsonObject jsonObj = PARSER.parse(item).getAsJsonObject();
++    JsonObject jsonObj = PARSER.parse(json).getAsJsonObject();
+       String key = jsonObj.get("name").getAsString();
+       Command value = commandMap.get(key);
+       if (value == null) {
+         throw new CommandNotFoundException();
+       }
+-
+-      // CHEAT DETECTION
+-      if (value.getName().equals("spaceinvaders.command.server.PlayerShootCommand")) { shootCounter++; }
+-      if (shootCounter > 7){ System.out.println("CHEAT DETECTED"); commandArray.clear(); return; }
+-
+-      command = GSON.fromJson(item,value.getClass());
+-      commandArray.add(command);
+-      // System.out.println("Added command to commandArray");
+-    }
++    command = GSON.fromJson(json,value.getClass());
+   }
+ 
+   /** Get the last command built. */
+   public Command getCommand() {
+     return command;
+   }
+-
+-  // get the commandArray
+-  public ArrayList<Command> getCommandArray() {
+-    System.out.println("getCommandArray(): " + commandArray.size() + " " + commandArray);
+-    return commandArray;
+-  }
+-
+-  public void clearCommandArray(){
+-    commandArray.clear();
+-  }
+ }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/command/CommandDirector.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/CommandDirector.java
+--- ./src/main/java/spaceinvaders/command/CommandDirector.java	2020-03-10 17:23:38.306343600 +0000
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/CommandDirector.java	2020-03-22 12:35:14.264745200 +0000
+@@ -3,8 +3,6 @@
+ import com.google.gson.JsonSyntaxException;
+ import spaceinvaders.exceptions.CommandNotFoundException;
+ 
+-import java.util.ArrayList;
+-
+ /**
+  * Used to convert JSON data into {@link spaceinvaders.command.Command}.
+  *
+@@ -47,12 +45,4 @@
+   public Command getCommand() {
+     return builder.getCommand();
+   }
+-
+-  public ArrayList<Command> getCommandArray() {
+-    return builder.getCommandArray();
+-  }
+-
+-  public void clearCommandArray() {
+-    builder.clearCommandArray();
+-  }
+ }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java
+--- ./src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java	2020-03-10 10:03:56.161654900 +0000
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/command/server/ConfigurePlayerCommand.java	2020-03-22 12:35:14.270743100 +0000
+@@ -11,7 +11,6 @@
+   private String playerName;
+   private Integer teamSize;
+   private Integer receivingUdpPort;
+-  private Integer ping;
+ 
+   ConfigurePlayerCommand() {
+     super(ConfigurePlayerCommand.class.getName(),TCP);
+@@ -24,7 +23,7 @@
+    *
+    * @throws NullPointerException if an argument is {@code null}.
+    */
+-  public ConfigurePlayerCommand(String playerName, int teamSize, int receivingUdpPort, int ping) {
++  public ConfigurePlayerCommand(String playerName, int teamSize, int receivingUdpPort) {
+     this();
+     if (playerName == null) {
+       throw new NullPointerException();
+@@ -32,7 +31,6 @@
+     this.playerName = playerName;
+     this.teamSize = teamSize;
+     this.receivingUdpPort = receivingUdpPort;
+-    this.ping = ping;
+   }
+ 
+   @Override
+@@ -40,7 +38,6 @@
+     executor.setName(playerName);
+     executor.setTeamSize(teamSize);
+     executor.setUdpDestinationPort(receivingUdpPort);
+-    executor.setPing(ping);
+   }
+ 
+   @Override
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/game/Game.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/Game.java
+--- ./src/main/java/spaceinvaders/server/game/Game.java	2020-04-08 01:44:31.209036100 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/Game.java	2020-03-22 12:35:14.293735500 +0000
+@@ -26,10 +26,6 @@
+ import spaceinvaders.utility.Service;
+ import spaceinvaders.utility.ServiceState;
+ 
+-import spaceinvaders.server.game.world.LogicEntity;
+-import java.util.Iterator;
+-import spaceinvaders.game.EntityEnum;
+-
+ /**
+  * The actual gameplay.
+  *
+@@ -63,31 +59,8 @@
+     /* Build world. */
+     WorldDirector director = new WorldDirector(new ClassicWorldBuilder());
+     List<Integer> idList = new ArrayList<>(team.size());
+-
+-    // Bucket Synchronization
+-    // set delay for each player which is the difference between their ping, and the highest ping of all other players
+-    for(int i = 0; i < team.size(); i++){
+-      for(int j = i+1; j < team.size(); j++){
+-          Integer temp = 0;
+-          if(team.get(j).getPing() > team.get(i).getPing()){
+-              temp = team.get(j).getPing() - team.get(i).getPing();
+-              if(team.get(i).getDelay() < temp){
+-                team.get(i).setDelay(temp);
+-              }
+-              
+-          }
+-          else if(team.get(i).getPing() > team.get(j).getPing()){
+-              temp = team.get(i).getPing() - team.get(j).getPing();
+-              if(team.get(j).getDelay() < temp){
+-                team.get(j).setDelay(temp);
+-              }
+-          }
+-      }
+-    }
+-
+     for (Player player : team) {
+       idList.add(player.getId());
+-      System.out.println("ID: " + player.getId() + ", name: " + player.getName() + ", ping: " + player.getPing() + ", delay: " + player.getDelay()); // print ping, delay and ID for each player
+     }
+     director.makeWorld(idList);
+     world = director.getWorld();
+@@ -103,27 +76,6 @@
+     state.set(true);
+   }
+ 
+-  // Interest Management - call RefreshEntitiesCommand only for entities within the players half
+-  final GameConfig config = GameConfig.getInstance();
+-  private void refreshEntities(){
+-    for (Player player : team) {
+-      Iterator<LogicEntity> playerIt;
+-      playerIt = world.getIterator(EntityEnum.PLAYER);
+-      while (playerIt.hasNext()) {
+-        LogicEntity playerEntity = playerIt.next();
+-        if (playerEntity.getId() == player.getId()) {
+-          System.out.println("Player: " + playerEntity.getId() + " X pos: " + playerEntity.getX());
+-          if(playerEntity.getX() < config.frame().getWidth()/2){
+-            player.push(new RefreshEntitiesCommand(world.getEntities("left")));
+-          }
+-          else if(playerEntity.getX() >= config.frame().getWidth()/2){
+-            player.push(new RefreshEntitiesCommand(world.getEntities("right")));
+-          }
+-        }
+-      }
+-    }
+-  }
+-
+   /**
+    * Start the game.
+    *
+@@ -142,7 +94,8 @@
+       buf.append(player.getName() + "@" + player.getId() + " ");
+     }
+     LOGGER.info("Started game " + hashCode() + " with players: " + buf.toString());
+-    refreshEntities();
++
++    distributeCommand(new RefreshEntitiesCommand(world.getEntities()));
+     flushCommands();
+     List<Couple<Integer,String>> idToName = new ArrayList<>(team.size());
+     for (Player player : team) {
+@@ -178,12 +131,10 @@
+           flushCommands();
+           break;
+         }
+-        /* Do a complete refresh every 2 seconds. */
+-        frameCounter = frameCounter % (FRAMES_PER_SECOND * 2);
+-        // System.out.println("frameCounter=" + frameCounter);
+-        if (frameCounter == (FRAMES_PER_SECOND * 2) - 1) {
+-          //System.out.println("RefreshEntitiesCommand COMPLETE ENTITY REFRESH");
+-          refreshEntities();
++        /* Do a complete refresh every 8 seconds. */
++        frameCounter = (frameCounter + 1) % (FRAMES_PER_SECOND * 8);
++        if (frameCounter == FRAMES_PER_SECOND * 8) {
++          distributeCommand(new RefreshEntitiesCommand(world.getEntities()));
+           commandsAvailable = true;
+           frameCounter = 0;
+         } else {
+@@ -224,7 +175,7 @@
+    *
+    * @throws NullPointerException if the argument is {@code null}.
+    */
+-  private void distributeCommand(Command command) throws InterruptedException {
++  private void distributeCommand(Command command) {
+     if (command == null) {
+       throw new NullPointerException();
+     }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/game/GameLoop.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/GameLoop.java
+--- ./src/main/java/spaceinvaders/server/game/GameLoop.java	2020-04-09 10:14:25.245154200 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/GameLoop.java	2020-03-22 12:35:14.293735500 +0000
+@@ -6,7 +6,6 @@
+ import static spaceinvaders.game.EntityEnum.PLAYER_BULLET;
+ import static spaceinvaders.game.EntityEnum.SHIELD;
+ 
+-import java.util.Collections;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -47,9 +46,6 @@
+   private Integer invadersVelocityX = config.speed().invader().getDistance();
+   private boolean gameOver = false;
+ 
+-  private final Integer PLAYER_POS_UPDATE = 200;
+-  private final AutoSwitch playerPosUpdate = new AutoSwitch(PLAYER_POS_UPDATE); // ms to automatically update player position
+-
+   /**
+    * @param team human players.
+    * @param world game environment.
+@@ -63,7 +59,6 @@
+       throw new NullPointerException();
+     }
+     this.team = team;
+-    Collections.sort(team); // sort the team list in order of ping delay (no delay first, highest delay last)
+     this.world = world;
+     this.rng = rng;
+     this.threadPool = threadPool;
+@@ -80,7 +75,6 @@
+     future.add(threadPool.submit(invadersMovement));
+     future.add(threadPool.submit(bulletsMovement));
+     future.add(threadPool.submit(invadersShooting));
+-    future.add(threadPool.submit(playerPosUpdate));
+     return null;
+   }
+ 
+@@ -89,7 +83,6 @@
+     invadersMovement.shutdown();
+     bulletsMovement.shutdown();
+     invadersShooting.shutdown();
+-    playerPosUpdate.shutdown();
+     for (Future<?> it : future) {
+       it.cancel(true);
+     }
+@@ -104,29 +97,13 @@
+   }
+ 
+   /** Handle user input that has happened since the last call. */
+-  public void processInput() throws InterruptedException {
+-    Integer amountDelayed = 0; // keep track of how much we've already delayed with this var
++  public void processInput() {
+     Iterator<Player> it = team.iterator();
+     Player player;
+     while (it.hasNext()) {
+       player = it.next();
+       if (player.isOnline()) {
+         List<Command> commands = player.pull();
+-        // print the incomingCommandQueue
+-        // commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName())); // comes from Connection.java
+-        
+-        // Bucket Synchronisation - delay execution of each set of commands for each player
+-        // as we are looping through a List<Player>, we need to keep track of how much we have already delayed to avoid slowing other players
+-        // the List "team" has already been sorted by ping delay in the GameLoop constructor, so the players with the least or no delay will have their actions executed first
+-        // we do not want to delay execution for every command, only for each group of commands, otherwise e.g. if there are 10 commands in the queue and 50ms delay we do not want to delay for 500ms
+-        
+-        if(!commands.isEmpty()){
+-          Integer delay = player.getDelay()-amountDelayed; // delay by the ping difference minus any delay we have already done this function call
+-          Thread.sleep(delay); 
+-          amountDelayed += player.getDelay(); // increment the delay so we can subtract from the next player in this loop
+-          System.out.println("BUCKET SYNCHRO: delaying " + player.getId() + " by " + delay + "ms");
+-        }
+-
+         for (Command command : commands) {
+           command.setExecutor(this);
+           command.execute();
+@@ -226,16 +203,6 @@
+ 
+     Iterator<LogicEntity> it;
+ 
+-    // SERVER: automatically send player position updates to clients
+-    if (playerPosUpdate.isOn()) {
+-      it = world.getIterator(EntityEnum.PLAYER);
+-      while (it.hasNext()) {
+-        LogicEntity player = it.next();
+-        movePlayer(player,player.getX()); // updates are sent to the player via MoveEntityCommand when movePlayer() and subsequently moveEntity() is called
+-      }
+-      playerPosUpdate.toggle();
+-    }
+-
+     /* Move invaders */
+     if (invadersMovement.isOn()) {
+       boolean moveDown = false;
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/game/world/World.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/world/World.java
+--- ./src/main/java/spaceinvaders/server/game/world/World.java	2020-04-09 10:15:23.258315300 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/game/world/World.java	2020-03-22 12:35:14.296734600 +0000
+@@ -11,8 +11,6 @@
+ import spaceinvaders.game.Entity;
+ import spaceinvaders.game.EntityEnum;
+ 
+-import spaceinvaders.game.GameConfig;
+-
+ /** Contains all characters that interact in the game. */
+ public class World implements WorldPlan {
+   private Map<EntityEnum,List<LogicEntity>> entityMap = new HashMap<>();
+@@ -107,34 +105,5 @@
+       }
+     }
+     return entities;
+-  } 
+-
+-  /**
+-   * Interest Management - get all entities in the left or right half of the game world
+-   *
+-   * @return a list of all currently active entities.
+-   */
+-  public List<Entity> getEntities(String flag) {
+-    final GameConfig config = GameConfig.getInstance();
+-    List<Entity> entities = new ArrayList<>();
+-    if(flag.equals("left")){
+-      for (List<LogicEntity> value : entityMap.values()) {
+-        for (LogicEntity it : value) {
+-          if(it.getX() < config.frame().getWidth()/2 || it.getType() == EntityEnum.PLAYER){
+-            entities.add(it.getBase());
+-          }
+-        }
+-      }
+-    }
+-    if(flag.equals("right")){
+-      for (List<LogicEntity> value : entityMap.values()) {
+-        for (LogicEntity it : value) {
+-          if(it.getX() >= config.frame().getWidth()/2|| it.getType() == EntityEnum.PLAYER){
+-            entities.add(it.getBase());
+-          }
+-        }
+-      }
+-    }
+-    return entities;
+   } 
+ }
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/network/Connection.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/Connection.java
+--- ./src/main/java/spaceinvaders/server/network/Connection.java	2020-04-06 16:34:28.454182700 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/Connection.java	2020-03-22 12:35:14.297734500 +0000
+@@ -12,7 +12,6 @@
+ import java.net.Socket;
+ import java.net.SocketAddress;
+ import java.util.ArrayList;
+-import java.util.Arrays;
+ import java.util.List;
+ import java.util.concurrent.LinkedTransferQueue;
+ import java.util.concurrent.TransferQueue;
+@@ -38,9 +37,6 @@
+   private final CommandDirector director = new CommandDirector(new ServerCommandBuilder());
+   private final ServiceState state = new ServiceState();
+   private SenderChain sender;
+-  private static int counter = 0;
+-
+-  private final Boolean TEST_SMOOTH_CORRECTIONS = false;
+ 
+   /**
+    * @param socket an already opened TCP socket.
+@@ -88,7 +84,10 @@
+       }
+       try {
+         director.makeCommand(data);
+-        executeCommandArray();
++        if (!incomingCommandQueue.offer(director.getCommand())) {
++          // This should never happen.
++          throw new AssertionError();
++        }
+       } catch (JsonSyntaxException | CommandNotFoundException exception) {
+         LOGGER.log(SEVERE,exception.toString(),exception);
+       }
+@@ -106,16 +105,6 @@
+     }
+   }
+ 
+-  // get the ArrayList containing list of commands, and add to the incomingCommandQueue
+-  public void executeCommandArray(){
+-    for(Command command: director.getCommandArray()){ 
+-      if (!incomingCommandQueue.offer(command)) {
+-        throw new AssertionError();
+-      }
+-    }
+-    director.clearCommandArray(); // clear the command array now we've executed all
+-  }
+-
+   /**
+    * Unwrap an UDP packet and put it in the {@code incomingCommandQueue}.
+    * 
+@@ -129,7 +118,9 @@
+ 
+     try {
+       director.makeCommand(data.trim());
+-      executeCommandArray();
++      if (!incomingCommandQueue.offer(director.getCommand())) {
++        throw new AssertionError();
++      }
+     } catch (JsonSyntaxException | CommandNotFoundException exception) {
+       LOGGER.log(SEVERE,exception.toString(),exception);
+     }
+@@ -146,29 +137,8 @@
+     if (command == null) {
+       throw new NullPointerException();
+     }
+-
+-    if(!TEST_SMOOTH_CORRECTIONS){
+       sender.handle(command);
+     } 
+-    // test smooth corrections by only sending one in every 10 player position updates (also delay regular server position updates in GameLoop)
+-    else if(command.getName() == "spaceinvaders.command.client.MoveEntityCommand" && TEST_SMOOTH_CORRECTIONS){
+-      if(counter == 10){
+-        sender.handle(command);
+-        counter = 0;
+-      } else { counter++; }
+-    } else { sender.handle(command); } 
+-
+-    // print the command to the log
+-    String cmd = command.getName();
+-    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand" && cmd != "spaceinvaders.command.client.MoveEntityCommand"){
+-      LOGGER.info("SERVER: " + cmd);
+-    }
+-    
+-/*     // TEST DEAD RECKONING
+-    if(cmd == "spaceinvaders.command.client.MoveEntityCommand"){
+-      System.out.println("MoveEntityCommand: " + command.toJson());
+-    } */
+-  }
+ 
+   /**
+    * Drains the {@code incomingCommandQueue} into a list.
+@@ -179,7 +149,6 @@
+     final List<Command> commands = new ArrayList<>();
+     try {
+       incomingCommandQueue.drainTo(commands);
+-      //commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName())); //
+     } catch (Exception exception) {
+       // Do not close the connection.
+       LOGGER.log(SEVERE,exception.toString(),exception);
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpHandler.java
+--- ./src/main/java/spaceinvaders/server/network/udp/UdpHandler.java	2020-04-05 19:22:02.802692100 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpHandler.java	2020-03-22 12:35:14.318727200 +0000
+@@ -22,7 +22,7 @@
+  * <p>UDP is used for repetitive commands during the game.
+  */
+ public class UdpHandler implements Service<Void> {
+-  private static final int MAX_INCOMING_PACKET_SIZE = 1024;
++  private static final int MAX_INCOMING_PACKET_SIZE = 256;
+ 
+   private final Service<Void> receiver;
+   private final Service<Void> sender;
+@@ -30,10 +30,6 @@
+   private final ExecutorService senderExecutor;
+   private final ServiceState state = new ServiceState();
+ 
+-  public static final int getPacketSize(){
+-    return MAX_INCOMING_PACKET_SIZE;
+-  }
+-
+   /**
+    * Constuct an UDP handler which will start a sender and a receiver.
+    *
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java
+--- ./src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java	2020-03-09 11:59:32.078687100 +0000
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpReceiver.java	2020-03-22 12:35:14.319727000 +0000
+@@ -2,7 +2,6 @@
+ 
+ import static java.util.logging.Level.SEVERE;
+ 
+-import java.lang.Thread;
+ import java.io.IOException;
+ import java.net.DatagramPacket;
+ import java.net.DatagramSocket;
+@@ -12,7 +11,6 @@
+ import spaceinvaders.utility.Service;
+ import spaceinvaders.utility.ServiceState;
+ 
+-
+ /** Receives UDP packets. */
+ class UdpReceiver implements Service<Void> {
+   private static final Logger LOGGER = Logger.getLogger(UdpReceiver.class.getName());
+@@ -52,13 +50,6 @@
+       DatagramPacket packet = new DatagramPacket(buffer,buffer.length);
+       try {
+         serverSocket.receive(packet);
+-/*         try{
+-          // artificial network delay
+-          Thread.sleep(100); // set a delay on receiving packets
+-          System.out.println("Thread.sleep() on UdpReceiver");
+-        } catch (InterruptedException ex){
+-          System.out.println("Thread.sleep() error in UdpReciever.java.Call():" + ex);
+-        } */
+         if (!incomingPacketQueue.offer(packet)) {
+           // This should never happen.
+           throw new AssertionError();
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpSender.java
+--- ./src/main/java/spaceinvaders/server/network/udp/UdpSender.java	2020-04-09 08:47:34.085904100 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/network/udp/UdpSender.java	2020-03-22 12:35:14.319727000 +0000
+@@ -10,8 +10,6 @@
+ import spaceinvaders.utility.Service;
+ import spaceinvaders.utility.ServiceState;
+ 
+-import java.util.concurrent.ThreadLocalRandom;
+-
+ /** Takes UDP packets out of a transfer queue and sends them to their destination. */
+ class UdpSender implements Service<Void> {
+   private static final Logger LOGGER = Logger.getLogger(UdpSender.class.getName());
+@@ -58,13 +56,6 @@
+       }
+       try {
+         serverSocket.send(packet);
+-
+-/*         // skip packets randomly
+-        Integer rand = ThreadLocalRandom.current().nextInt(1, 10);
+-        if(rand < 10){
+-          serverSocket.send(packet);
+-        } else { LOGGER.info("SERVER skipped packet send " + packet); } */
+-
+       } catch (IOException ioException) {
+         if (state.get()) {
+           throw ioException;
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/server/player/Player.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/player/Player.java
+--- ./src/main/java/spaceinvaders/server/player/Player.java	2020-04-08 01:44:43.165823700 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/server/player/Player.java	2020-03-22 12:35:14.320726700 +0000
+@@ -8,22 +8,13 @@
+ import spaceinvaders.server.network.Connection;
+ 
+ /** A player which has established a connection and is ready to join a game. */
+-public class Player implements Comparable<Player> {
++public class Player {
+   private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
+ 
+   private final Connection connection;
+   private final Future<Void> connectionFuture;
+   private String name;
+   private Integer teamSize;
+-  private Integer ping;
+-  private Integer delay = 0;
+-
+-  // implements Comparable<Player> to enable us to order/sort Player objects by their delay
+-  @Override
+-  public int compareTo(Player player) {
+-      int compareDelay=((Player)player).getDelay();
+-      return this.delay-compareDelay; // ascending order
+-  }
+ 
+   /**
+    * Wrap a player around the specified connection.
+@@ -77,6 +68,7 @@
+   /** Close the connection. */
+   public void close() {
+     LOGGER.info("Connection " + getId() + " closed");
++
+     connection.shutdown();
+     connectionFuture.cancel(true);
+   }
+@@ -105,22 +97,6 @@
+     this.teamSize = teamSize;
+   }
+ 
+-  public Integer getPing() {
+-    return ping;
+-  }
+-
+-  public void setPing(Integer ping) {
+-    this.ping = ping;
+-  }
+-
+-  public Integer getDelay() {
+-    return delay;
+-  }
+-
+-  public void setDelay(Integer delay) {
+-    this.delay = delay;
+-  }
+-
+   /**
+    * Set the remote port to which UDP packets should be sent.
+    *
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/java/spaceinvaders/utility/Chain.java ../Original/SpaceInvaders/src/main/java/spaceinvaders/utility/Chain.java
+--- ./src/main/java/spaceinvaders/utility/Chain.java	2020-03-29 14:39:25.288488700 +0100
++++ ../Original/SpaceInvaders/src/main/java/spaceinvaders/utility/Chain.java	2020-03-22 12:35:14.321726300 +0000
+@@ -1,6 +1,4 @@
+ package spaceinvaders.utility;
+-import java.util.ArrayList;
+-import java.net.DatagramPacket;
+ 
+ /**
+  * Chain of Responsibility.
+@@ -10,8 +8,7 @@
+ public interface Chain<T> {
+   /** Either handles the task or passes it to the next in chain. */
+   public void handle(T task);
+-  public void handleBucket(ArrayList<T> bucket);
+-  public void sendPacket(DatagramPacket packet);
++
+   /**
+    * @param next next in chain.
+    */
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./src/main/resources/config/game.json ../Original/SpaceInvaders/src/main/resources/config/game.json
+--- ./src/main/resources/config/game.json	2020-04-01 11:40:17.544728900 +0100
++++ ../Original/SpaceInvaders/src/main/resources/config/game.json	2020-03-22 12:35:14.323725800 +0000
+@@ -27,8 +27,8 @@
+ 	"invadersShootingFactor": 300,
+ 	"shieldsPerPlayer": 3,
+ 	"frame": {
+-		"width": 1500,
+-		"height": 700
++		"width": 1280,
++		"height": 760
+ 	},
+ 	"speed": {
+ 		"invader": {
+Binary files ./src/main/resources/img/ufo - Copy.png and ../Original/SpaceInvaders/src/main/resources/img/ufo - Copy.png differ
+Binary files ./src/main/resources/img/ufo.png and ../Original/SpaceInvaders/src/main/resources/img/ufo.png differ
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./test-buckets.java ../Original/SpaceInvaders/test-buckets.java
+--- ./test-buckets.java	2020-04-09 10:22:38.050000000 +0100
++++ ../Original/SpaceInvaders/test-buckets.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,52 +0,0 @@
+-import java.util.ArrayList;
+-
+-class Test 
+-{ 
+-    // Test code/algorithm for recursively splitting items into separate buckets with a given maximum size 
+-    public static void main(String[] args) 
+-    { 
+-        ArrayList<String> list = new ArrayList<String>();
+-        list.add("sakd2");
+-        list.add("dakdmsaiodaq");
+-        list.add("sakdm2io211");
+-        list.add("sakdasd");
+-        list.add("skaldamkda");
+-        list.add("skds");
+-        list.add("sdkada");
+-        list.add("siodqwiowd1");
+-        list.add("sakdamdk2");
+-        split(list);
+-    }
+-    
+-    public static void split(String data){
+-        if(data.length() > 0){
+-            String overflow = "";
+-            int size = 20;
+-            int idxFrom = 0;
+-            while(idxFrom < size){
+-                idxFrom = data.indexOf('~', idxFrom);
+-            }
+-            data = data.substring(0, idxFrom);
+-            overflow = data.substring(idxFrom);
+-            System.out.println(data);
+-            //split(overflow);
+-        }
+-    }
+-
+-    public static void split(ArrayList<String> list){
+-        if(list.size() == 0){ return; } // base case for recursion
+-        String data = "";
+-        int size = 20;
+-        int idx;
+-        for(idx = 0; idx < list.size(); idx++){
+-            if(data.length() + list.get(idx).length() < size){
+-                data += list.get(idx) + "~";
+-            } else { break; }
+-        }
+-        System.out.println(data);
+-        ArrayList<String> temp = new ArrayList<String>(list.subList(idx, list.size()));
+-        split(temp); // recursively call on the subList
+-        System.out.println(temp);
+-    }
+-} 
+-
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./test.json ../Original/SpaceInvaders/test.json
+--- ./test.json	2020-03-10 14:05:13.819942200 +0000
++++ ../Original/SpaceInvaders/test.json	1970-01-01 01:00:00.000000000 +0100
+@@ -1 +0,0 @@
+-{"id":624792191,"name":"spaceinvaders.command.server.MovePlayerLeftCommand"}{"id":624792191,"name":"spaceinvaders.command.server.MovePlayerLeftCommand"}
+\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./test-ping-delay.java ../Original/SpaceInvaders/test-ping-delay.java
+--- ./test-ping-delay.java	2020-04-09 10:21:27.392911900 +0100
++++ ../Original/SpaceInvaders/test-ping-delay.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,36 +0,0 @@
+-import java.util.*;
+-
+-class Ping 
+-{ 
+-    // Test code for determining ping delta between an item in an array and the largest item in the array
+-    public static void main(String[] args) 
+-    { 
+-        List<Integer> ping = Arrays.asList(200, 500, 50, 350);
+-        List<Integer> diff = Arrays.asList(0, 0, 0, 0);
+-
+-        for(int i = 0; i < ping.size(); i++){
+-            for(int j = i+1; j < ping.size(); j++){
+-                System.out.println(i + "," + j);
+-                Integer temp = 0;
+-                if(ping.get(j) > ping.get(i)){
+-                    temp = ping.get(j) - ping.get(i);
+-                    System.out.println(temp);
+-                    if(diff.get(i) < temp){
+-                        diff.set(i, temp);
+-                    }
+-                    
+-                }
+-                else if(ping.get(i) > ping.get(j)){
+-                    temp = ping.get(i) - ping.get(j);
+-                    System.out.println(temp);
+-                    if(diff.get(j) < temp){
+-                        diff.set(j, temp);
+-                    }
+-                }
+-            }
+-        }
+-    System.out.println(diff);
+-    
+-    }
+-
+-};
+\ No newline at end of file
+diff -ENwbur -x .git -x '*.html' -x '*.css' -x '*target*' -x '.vscode*' ./UML.clsvis ../Original/SpaceInvaders/UML.clsvis
+--- ./UML.clsvis	2020-03-09 11:38:06.911036100 +0000
++++ ../Original/SpaceInvaders/UML.clsvis	1970-01-01 01:00:00.000000000 +0100
+@@ -1,2 +0,0 @@
+-classPaths=[G:\Dropbox\QMUL\DistributedSystems\Project\SpaceInvaders\lib\gson-2.8.0.jar]
+-importPaths=[G:\Dropbox\QMUL\DistributedSystems\Project\SpaceInvaders\target\space-invaders-1.0.0.jar]

@@ -2,8 +2,7 @@ import java.util.ArrayList;
 
 class Test 
 { 
-    // Your program begins with a call to main(). 
-    // Prints "Hello, World" to the terminal window. 
+    // Test code/algorithm for recursively splitting items into separate buckets with a given maximum size 
     public static void main(String[] args) 
     { 
         ArrayList<String> list = new ArrayList<String>();

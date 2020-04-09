@@ -63,7 +63,7 @@ public class GameLoop implements Service<Void> {
       throw new NullPointerException();
     }
     this.team = team;
-    Collections.sort(team); // sort out team list in order of ping delay (no delay first, highest delay last)
+    Collections.sort(team); // sort the team list in order of ping delay (no delay first, highest delay last)
     this.world = world;
     this.rng = rng;
     this.threadPool = threadPool;
@@ -105,7 +105,7 @@ public class GameLoop implements Service<Void> {
 
   /** Handle user input that has happened since the last call. */
   public void processInput() throws InterruptedException {
-    Integer amountDelayed = 0;
+    Integer amountDelayed = 0; // keep track of how much we've already delayed with this var
     Iterator<Player> it = team.iterator();
     Player player;
     while (it.hasNext()) {
@@ -113,7 +113,7 @@ public class GameLoop implements Service<Void> {
       if (player.isOnline()) {
         List<Command> commands = player.pull();
         // print the incomingCommandQueue
-        // commands.forEach(arr -> System.out.println("incomingCommandQueue " + ThreadLocalRandom.current().nextInt(1, 100) + ": " + arr.getName())); // comes from Connection.java
+        // commands.forEach(arr -> System.out.println("incomingCommandQueue: " + arr.getName())); // comes from Connection.java
         
         // Bucket Synchronisation - delay execution of each set of commands for each player
         // as we are looping through a List<Player>, we need to keep track of how much we have already delayed to avoid slowing other players
@@ -231,7 +231,7 @@ public class GameLoop implements Service<Void> {
       it = world.getIterator(EntityEnum.PLAYER);
       while (it.hasNext()) {
         LogicEntity player = it.next();
-        movePlayer(player,player.getX());
+        movePlayer(player,player.getX()); // updates are sent to the player via MoveEntityCommand when movePlayer() and subsequently moveEntity() is called
       }
       playerPosUpdate.toggle();
     }
