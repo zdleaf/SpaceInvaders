@@ -47,7 +47,7 @@ public class GameLoop implements Service<Void> {
   private Integer invadersVelocityX = config.speed().invader().getDistance();
   private boolean gameOver = false;
 
-  private final Integer PLAYER_POS_UPDATE = 200;
+  private final Integer PLAYER_POS_UPDATE = 150;
   private final AutoSwitch playerPosUpdate = new AutoSwitch(PLAYER_POS_UPDATE); // ms to automatically update player position
 
   /**

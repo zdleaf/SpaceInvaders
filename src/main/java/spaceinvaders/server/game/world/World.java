@@ -114,7 +114,7 @@ public class World implements WorldPlan {
    *
    * @return a list of all currently active entities.
    */
-  public List<Entity> getEntities(String flag) {
+  public List<Entity> getEntities(String flag) { // flag = "left" or "right"
     final GameConfig config = GameConfig.getInstance();
     List<Entity> entities = new ArrayList<>();
     if(flag.equals("left")){

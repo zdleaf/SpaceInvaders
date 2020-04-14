@@ -71,7 +71,7 @@ class UdpSender implements Chain<Command> {
         throw new NullPointerException();
       }
       if (commandBucket.get(idx).getProtocol().equals(UDP)) {
-        if(data.length() + commandBucket.get(idx).toJson().length() < UdpHandler.getPacketSize()){
+        if(data.length() + commandBucket.get(idx).toJson().length() < UdpHandler.getPacketSize()){ // keep adding commands until our packet is bigger than MAX_PACKET_SIZE
           data += commandBucket.get(idx).toJson() + "~";
         } else { break; }
       }

@@ -2,14 +2,14 @@ For a diff file containing all amendments and changes to the code, see diff.diff
 diff -ENwbur -x ".git" -x "*.html" -x "*.css" -x "*target*" -x ".vscode*" ./ ../Original/SpaceInvaders/ > diff.diff
 
 Artificial Network delay
-    - In ClientConfig.java, each player is assigned a random ping with ThreadLocalRandom from a given range
+    - In client/ClientConfig.java, each player is assigned a random ping with ThreadLocalRandom from a given range
     - In client/network/UdpSender.java:sendPacket() we Thread.sleep() by this ping value before sending each packet, simulating network latency
     - This ping integer is sent to the server along with the other Player information (e.g. username etc) via the SetPlayerIdCommand as the server requires it for bucket synchronisation
     - The server stores the ping with the player in their instance of Player.java
 
 Bucket Synchro
     - Game.java - before we start the game, we compare every players ping, and set a delay for each Player. this is the difference between that players ping and the person with the highest ping. we can then delay execution of events for each player by this amount.
-        - Execution of events is done in GameLoop.java, we loop through each player in the list and execute their commands
+    - GameLoop.java - execution of events is done in GameLoop.java, we loop through each player in the list and execute their commands
         - If we were to delay one players commands with a Thread.Sleep(delay) here, all commands and players after this would also be affected by the delay. For example, if the first player when we loop through the players list had a 50ms delay before execution, the next player to have their commands executed would also have had to wait 50ms
         - To resolve this, in Player.java we have implemented Comparable to be able to sort our player list by ping delay (overriding the compareTo() function)
         - We sort the player list by ping delay (lowest or no delay first), and execute these commands first, and delaying by the appropriate amount
@@ -35,8 +35,8 @@ Smooth Corrections
         - GamePanel.java - Set DEADRECK_ENABLED to false
 
 Dead Reckoning 
-    - default settings: DEADRECK_DELAY = 300 ms, PLAYER_POS_UPDATE 200 ms
-    - SERVER SIDE: In GameLoop.java we have made a new AutoSwitch called playerPosUpdate that is called from entitiesMove(), this sends an update of player position to the client every 200 ms via a MoveEntityCommand.
+    - default settings: DEADRECK_DELAY = 300 ms, PLAYER_POS_UPDATE 150 ms
+    - SERVER SIDE: In GameLoop.java we have made a new AutoSwitch called playerPosUpdate that is called from entitiesMove(), this sends an update of player position to the client every 150 ms via a MoveEntityCommand.
     - CLIENT SIDE: in GamePanel.java we have an executor that executes deadReckon() every 300 ms. This gets the previous direction and position (saved in the hashmap's prevEntityDirection amd prevEntityPosition when relocateEntity() is called) and moves the player in that direction.
 
     - to test and see how ships automatically move in absence of server update

@@ -160,7 +160,7 @@ public class Connection implements Service<Void> {
 
     // print the command to the log
     String cmd = command.getName();
-    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand" && cmd != "spaceinvaders.command.client.MoveEntityCommand"){
+    if(cmd != "spaceinvaders.command.client.FlushScreenCommand" && cmd != "spaceinvaders.command.client.TranslateGroupCommand" && cmd != "spaceinvaders.command.client.MoveEntityCommand" && cmd != "spaceinvaders.command.client.RefreshEntitiesCommand"){
       LOGGER.info("SERVER: " + cmd);
     }
     

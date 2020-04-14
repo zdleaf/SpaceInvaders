@@ -78,7 +78,7 @@ public abstract class GraphicalEntity implements Cloneable, Drawable {
     while(i != newX){
       // System.out.println("i = " + i);
       body.setPos(i,newY); 
-      try{ Thread.sleep(10); } catch (InterruptedException e){ break; }
+      try{ Thread.sleep(15); } catch (InterruptedException e){ break; }
       if(xDiff < 0){i--;}
       if(xDiff > 0){i++;}
     }
