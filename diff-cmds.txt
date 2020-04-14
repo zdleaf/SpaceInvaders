@@ -1,6 +1,6 @@
-diff -ENwbur -x ".git" -x "*.html" -x "*.css" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
+diff -ENwbur -x "*.txt" -x ".git" -x "*.html" -x "*.css" ./ ../Original/SpaceInvaders/ | rg -o "\w*diff.*?\.java"
 
-diff -ENwbur -x ".git" -x "*.html" -x "*.css" -x "*target*" -x ".vscode*" ./ ../Original/SpaceInvaders/ > diff.diff
+diff -ENwbur -x "*.txt" -x ".git" -x "*.html" -x "*.css" -x "*target*" -x ".vscode*" ./ ../Original/SpaceInvaders/ > diff.diff
 
 diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/ClientConfig.java
 diff -ENwbur -x .git ./src/main/java/spaceinvaders/client/mvc/GameController.java
