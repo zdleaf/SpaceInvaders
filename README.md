@@ -2,7 +2,9 @@ Coursework for Distributed Systems module. The goal is to add some functionality
 
 Original code forked from github.com/apetenchea/SpaceInvaders
 
-The additional functionality which should be added are as follows:
+See CHANGES.txt and diff.diff file to see the updates/changes made to the game as below:
+
+The additional functionality required was as follows:
 •    Introduce an artificial network delay to simulate some of the challenges which take place in networked games.
 •    Implement bucket synchronization so that all clients have the same frame rate so the game can be considered "fair"
 
